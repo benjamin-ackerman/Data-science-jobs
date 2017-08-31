@@ -1,21 +1,24 @@
 ---
-title: "Final Project Plan"
+title: "Analysis of Data Science Job Postings"
 author: "Benjamin Ackerman"
 date: "September 1, 2017"
 output: html_document
 ---
 
-```{r setup, echo=FALSE, warning=FALSE}
-library(qdapRegex);library(knitr)
+```{r setup, echo=FALSE, warning=FALSE,message=FALSE}
+library(qdapRegex);library(knitr);library(dplyr);library(kableExtra);library(ggmap);library(leaflet)
 ```
 
-## Project choice: Option 3
 Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
 
-## Description of my plan
-1. Scrape data from the job postings on **[Kaggle](https://www.kaggle.com/jobs)**, and possibly from other job boards as well, such as **[LinkedIn](https://www.linkedin.com/jobs/)**, **[Data Elixer](https://jobs.dataelixir.com)**, **[R-users](https://www.r-users.com)**, **[Stack Overflow](https://stackoverflow.com/jobs)** and **[Data Jobs](https://datajobs.com)**.
+## 1. Scrape Data from Job Search Boards
+I have scraped data from [Datajobs.com](https://datajobs.com/data-science-jobs).  They have a specific listing of data science jobs, which are formatted fairly consistently.  Here is my approach to obtain data:
 
-```{r attempt to gather data from datajobs.com, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,resultss='asis'}
+- Create a vector of the pages that list jobs
+- Extract job titles, company names, locations and links to job listings
+    + From the job listing links, extract latitude and longitude from Google Maps figures, extract information on full vs part time jobs, and extract key skills (graduate degrees, coding experience, etc)
+    
+```{r scrape data from datajobs.com, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,results='asis'}
 #Denote website name and pages
 website = 'https://datajobs.com/'
 pages = paste0("data-science-jobs",c("",paste0("~",2:30)))
@@ -45,19 +48,46 @@ for(i in 1:length(pages)){
     locations[[i]]=location
 }
 
+# Save information in a dataframe, remove missing rows and duplicate job postings
 datajobs_postings = data.frame(position=unlist(jobs),company=unlist(companies),location=unlist(locations),links=unlist(links), stringsAsFactors = FALSE)
 datajobs_postings = na.omit(datajobs_postings)
-
 datajobs_postings<-datajobs_postings[!duplicated(datajobs_postings),]
 
-kable(head(datajobs_postings))
+# Create function to extract data from individual postings:
+extract_listing<-function(x){
+  job_posting = suppressWarnings(readLines(datajobs_postings$links[x]))
+  employ_type = unlist(rm_between(job_posting[grep("<strong>Employment Type:</strong>",job_posting)+2],"\t\t\t\t\t","\t\t\t\t</div>",extract=TRUE))[1]
+  if(nchar(employ_type) > 15){employ_type = unlist(rm_between(job_posting[grep("<strong>Employment Type:</strong>",job_posting)+2],"\t\t\t\t\t","<br",extract=TRUE))[1]}
+  
+  latlong = unlist(rm_between(job_posting[grep("google.maps.LatLng",job_posting)][1],"google.maps.LatLng(",")",extract=TRUE))
+  latlong = as.numeric(unlist(strsplit(latlong,",")))
+  c(employ_type,latlong)
+}
+
+# Apply function to all of the links in the dataframe
+listing_dat<-as.data.frame(t(sapply(1:nrow(datajobs_postings),extract_listing)),stringsAsFactors=FALSE)
+colnames(listing_dat) = c("employ_type","lat","long")
+
+# Make latitude and longitude numeric
+listing_dat[,c("lat","long")] = lapply(listing_dat[,c("lat","long")], function(x) as.numeric(x))
+
+# Bind the individual listing data to the original dataset
+datajobs_postings = cbind(datajobs_postings,listing_dat)
+
+# Print the first ten job postings
+kable(datajobs_postings[1:10,])
 ```
 
+Above are the first 10 job listings from Data Jobs. I've identified `r nrow(datajobs_postings)` total unique job postings on Data Jobs.
 
-I've started gathering URLs to all job postings on Data Jobs, hopefully can apply that code to other sites.  I've identified `r nrow(datajobs_postings)` unique job postings on Data Jobs.
-
-2. Identify common elements of job postings, and extract information related to important skills that employers search for.
-3. Prepare data frame such that each row corresponds to a job listing, with variables for skills and geographic locations.
-4. Explore frequencies of skills listed through descriptive tables and visualizations (word cloud?), along with a map of the US with points for each employer's location.
-
+## 2. Visualize Job Postings by Location
+```{r plot jobs on map, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
+# map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
+# 
+# ggmap(map) + geom_point(aes(x = long, y = lat,color='dark red',alpha=.5),size=3, data = datajobs_postings)+theme(legend.position="none")
+m <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng=datajobs_postings$long, lat=datajobs_postings$lat, popup = paste0("<b><a href='",datajobs_postings$links,"'>",datajobs_postings$company," - ",datajobs_postings$position,"</a></b>"))
+m
+```
 

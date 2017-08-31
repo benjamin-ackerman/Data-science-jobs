@@ -1,3 +1,8 @@
 base
 qdapRegex
 knitr
+dplyr
+kableExtra
+ggplot2
+ggmap
+leaflet
