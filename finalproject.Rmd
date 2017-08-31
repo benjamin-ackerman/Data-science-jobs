@@ -5,12 +5,46 @@ date: "August 30, 2017"
 output: pdf_document
 ---
 
+```{r setup, echo=FALSE, warning=FALSE}
+library(qdapRegex)
+```
+
 ## Project choice: Option 3
 Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
 
 ## Description of my plan
 1. Scrape data from the job postings on **[Kaggle](https://www.kaggle.com/jobs)**, and possibly from other job boards as well, such as **[LinkedIn](https://www.linkedin.com/jobs/)**, **[Data Elixer](https://jobs.dataelixir.com)**, **[R-users](https://www.r-users.com)** and **[Data Jobs](https://datajobs.com)**.
+
+```{r attempt to gather data from datajobs.com, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE}
+#Denote website name and pages
+website = 'https://datajobs.com/'
+pages = paste0("data-science-jobs",c("",paste0("~",2:30)))
+
+listings=list()
+for(i in 1:length(pages)){
+  # Read in the given list of web listings
+  thepage = readLines(paste0(website,pages[i]))
+  # Find the item in the html code that contains the websites on that page
+  rawlistings = thepage[grep("Analytics and Data Science has become so valuable",thepage) + 6]
+  # Extract the extensions of all of the job listings on that page
+  pagenames<-unlist(rm_between(rawlistings, "href='", "'>", extract=TRUE))
+  
+  # Get full URLs of the webpages
+  listing_by_page=paste0(website,pagenames)
+  
+  if(i %in% c(1,30)){
+    listings[[i]]=listing_by_page[-length(listing_by_page)]}
+  if(i %in% c(2:29)){
+    listings[[i]]=listing_by_page[-c(length(listing_by_page)-1,length(listing_by_page))]}
+}
+
+datajobs_postings = unique(unlist(listings))
+```
+
+    a. I've started gathering URLs to all job postings on Data Jobs, hopefully can apply that code to other sites.  I've identified `r length(datajobs_postings)` unique job postings on Data Jobs.
+
 2. Identify common elements of job postings, and extract information related to important skills that employers search for.
 3. Prepare data frame such that each row corresponds to a job listing, with variables for skills and geographic locations.
 4. Explore frequencies of skills listed through descriptive tables and visualizations (word cloud?), along with a map of the US with points for each employer's location.
+
 
