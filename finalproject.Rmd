@@ -80,7 +80,7 @@ kable(datajobs_postings[1:10,])
 
 Above are the first 10 job listings from Data Jobs. I've identified `r nrow(datajobs_postings)` total unique job postings on Data Jobs.
 
-I have also begun scraping data from Stack Overflow, by searching for jobs with "Data Scientist" listed. Here's some of the data I've been able to extract:
+I have also begun scraping data from [Stack Overflow](https://stackoverflow.com/jobs) by searching for jobs with the term "Data Scientist." Here's some of the data I've been able to extract:
 
 ```{r scrape data from stack overflow, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,results='asis'}
 website = "https://stackoverflow.com/jobs?sort=i&q=data+scientist"
@@ -93,14 +93,26 @@ for(i in 1:length(pages)){
 
   links[[i]] = unlist(rm_between(rawlistings, "url\":\"", "\"", extract=TRUE))
 }
+njobs = length(unlist(links))
 
-about_job = data.frame(job_type=rep(NA,length(unlist(links))), experience=rep(NA,length(unlist(links))), role=rep(NA,length(unlist(links))), industry=rep(NA,length(unlist(links))),company_size=rep(NA,length(unlist(links))),company_type=rep(NA,length(unlist(links))), link=unlist(links))
+about_job = data.frame(job_type=rep(NA,njobs), 
+                       experience=rep(NA,njobs), 
+                       role=rep(NA,njobs),
+                       industry=rep(NA,njobs),
+                       company_size=rep(NA,njobs),
+                       company_type=rep(NA,njobs), 
+                       tags = rep(NA,njobs),
+                       link=unlist(links),
+                       stringsAsFactors = FALSE)
 
 for(j in 1:nrow(about_job)){
-  listing = readLines(unlist(links)[j])
-  search.limit=grep("About this job",listing)[2]
-
-  descriptions<-unlist(rm_between(listing[search.limit:(search.limit+50)],"<span class=\"-key\">",":",extract=TRUE)) 
+  listing = readLines(about_job$link[j])
+  aboutjob.limit=grep("About this job",listing)[2]
+  tags.data=listing[grep("post-tag job-link no-tag-menu",listing)][1]
+  
+  about_job$tags[j] = rm_between(tags.data,'developer-jobs-using-',"\"",extract=TRUE)
+  
+  descriptions<-unlist(rm_between(listing[aboutjob.limit:(aboutjob.limit+50)],"<span class=\"-key\">",":",extract=TRUE)) 
   descriptions<-descriptions[which(!is.na(descriptions))]
   
   descriptions[descriptions == "Job type"] = "job_type"
@@ -110,16 +122,18 @@ for(j in 1:nrow(about_job)){
   descriptions[descriptions == "Company size"] = "company_size"
   descriptions[descriptions == "Company type"] = "company_type"
 
-  responses<-unlist(rm_between(listing[search.limit:(search.limit+50)],"<span class=\"-value\">","</span>",extract=TRUE))
+  responses<-unlist(rm_between(listing[aboutjob.limit:(aboutjob.limit+50)],"<span class=\"-value\">","</span>",extract=TRUE))
   responses<-responses[which(!is.na(responses))]
   
   about_job[j,descriptions]=responses
 }
 ```
 
-```{r print stackexchange, echo=FALSE, results='asis',cache=TRUE}
-kable(about_job[1:10,])
+```{r print stackexchange, echo=FALSE, results='asis',cache=TRUE,eval=TRUE}
+kable(about_job[1:10,-7])
 ```
+
+There are `r nrow(about_job)` jobs listed on Stack Overflow that come up in my search.
 
 ## 2. Visualize Job Postings by Location
 ```{r plot jobs on map, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
