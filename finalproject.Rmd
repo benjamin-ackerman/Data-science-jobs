@@ -13,7 +13,7 @@ library(qdapRegex);library(knitr)
 Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
 
 ## Description of my plan
-1. Scrape data from the job postings on **[Kaggle](https://www.kaggle.com/jobs)**, and possibly from other job boards as well, such as **[LinkedIn](https://www.linkedin.com/jobs/)**, **[Data Elixer](https://jobs.dataelixir.com)**, **[R-users](https://www.r-users.com)** and **[Data Jobs](https://datajobs.com)**.
+1. Scrape data from the job postings on **[Kaggle](https://www.kaggle.com/jobs)**, and possibly from other job boards as well, such as **[LinkedIn](https://www.linkedin.com/jobs/)**, **[Data Elixer](https://jobs.dataelixir.com)**, **[R-users](https://www.r-users.com)**, **[Stack Overflow](https://stackoverflow.com/jobs)** and **[Data Jobs](https://datajobs.com)**.
 
 ```{r attempt to gather data from datajobs.com, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,resultss='asis'}
 #Denote website name and pages
@@ -39,21 +39,17 @@ for(i in 1:length(pages)){
   # Get full URLs of the webpages
   listing_by_page=paste0(website,pagenames)
   
-  if(i %in% c(1,30)){
-    links[[i]]=listing_by_page[-length(listing_by_page)]
-    jobs[[i]]=jobnames[-length(jobnames)]
-    companies[[i]]=companyname[-length(companyname)]
-    locations[[i]]=location[-length(location)]}
-  if(i %in% c(2:29)){
-    links[[i]]=listing_by_page[-c(length(listing_by_page)-1,length(listing_by_page))]
-    jobs[[i]]=jobnames[-c(length(jobnames)-1,length(jobnames))]
-    companies[[i]]=companyname[-c(length(companyname)-1,length(companyname))]
-    locations[[i]]=location[-c(length(location)-1,length(location))]}
+    links[[i]]=listing_by_page
+    jobs[[i]]=jobnames
+    companies[[i]]=companyname
+    locations[[i]]=location
 }
 
-datajobs_postings = data.frame(jobs=unlist(jobs),companies=unlist(companies),locations=unlist(locations),links=unlist(links), stringsAsFactors = FALSE)
+datajobs_postings = data.frame(position=unlist(jobs),company=unlist(companies),location=unlist(locations),links=unlist(links), stringsAsFactors = FALSE)
+datajobs_postings = na.omit(datajobs_postings)
 
 datajobs_postings<-datajobs_postings[!duplicated(datajobs_postings),]
+
 kable(head(datajobs_postings))
 ```
 
