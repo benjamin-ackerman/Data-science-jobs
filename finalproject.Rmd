@@ -80,6 +80,47 @@ kable(datajobs_postings[1:10,])
 
 Above are the first 10 job listings from Data Jobs. I've identified `r nrow(datajobs_postings)` total unique job postings on Data Jobs.
 
+I have also begun scraping data from Stack Overflow, by searching for jobs with "Data Scientist" listed. Here's some of the data I've been able to extract:
+
+```{r scrape data from stack overflow, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,results='asis'}
+website = "https://stackoverflow.com/jobs?sort=i&q=data+scientist"
+pages = c("",paste0("&pg=",c(2:6)))
+
+links = list()
+for(i in 1:length(pages)){
+  thepage = readLines(paste0(website,pages)[i])
+  rawlistings=thepage[grep("numberOfItems",thepage)]
+
+  links[[i]] = unlist(rm_between(rawlistings, "url\":\"", "\"", extract=TRUE))
+}
+
+about_job = data.frame(job_type=rep(NA,length(unlist(links))), experience=rep(NA,length(unlist(links))), role=rep(NA,length(unlist(links))), industry=rep(NA,length(unlist(links))),company_size=rep(NA,length(unlist(links))),company_type=rep(NA,length(unlist(links))), link=unlist(links))
+
+for(j in 1:nrow(about_job)){
+  listing = readLines(unlist(links)[j])
+  search.limit=grep("About this job",listing)[2]
+
+  descriptions<-unlist(rm_between(listing[search.limit:(search.limit+50)],"<span class=\"-key\">",":",extract=TRUE)) 
+  descriptions<-descriptions[which(!is.na(descriptions))]
+  
+  descriptions[descriptions == "Job type"] = "job_type"
+  descriptions[descriptions == "Experience level"] = "experience"
+  descriptions[descriptions == "Role"] = "role"
+  descriptions[descriptions == "Industry"] = "industry"
+  descriptions[descriptions == "Company size"] = "company_size"
+  descriptions[descriptions == "Company type"] = "company_type"
+
+  responses<-unlist(rm_between(listing[search.limit:(search.limit+50)],"<span class=\"-value\">","</span>",extract=TRUE))
+  responses<-responses[which(!is.na(responses))]
+  
+  about_job[j,descriptions]=responses
+}
+```
+
+```{r print stackexchange, echo=FALSE, results='asis',cache=TRUE}
+kable(about_job[1:10,])
+```
+
 ## 2. Visualize Job Postings by Location
 ```{r plot jobs on map, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
 # map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
@@ -90,4 +131,3 @@ m <- leaflet() %>%
   addMarkers(lng=datajobs_postings$long, lat=datajobs_postings$lat, popup = paste0("<b><a href='",datajobs_postings$links,"'>",datajobs_postings$company," - ",datajobs_postings$position,"</a></b>"))
 m
 ```
-
