@@ -1,0 +1,16 @@
+---
+title: "Final Project Plan"
+author: "Benjamin Ackerman"
+date: "August 30, 2017"
+output: html_document
+---
+
+## Project choice: Option 3
+Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
+
+## Description of my plan
+1. Scrape data from the job postings on [Kaggle](https://www.kaggle.com/jobs), and possibly from other job boards as well, such as [LinkedIn](https://www.linkedin.com/jobs/), [Data Elixer](https://jobs.dataelixir.com), [R-users](https://www.r-users.com) and [Data Jobs](https://datajobs.com).
+2. Identify common elements of job postings, and extract information related to important skills that employers search for.
+3. Prepare data frame such that each row corresponds to a job listing, with variables for skills and geographic locations.
+4. Explore frequencies of skills listed through descriptive tables and visualizations (word cloud?), along with a map of the US with points for each employer's location.
+
