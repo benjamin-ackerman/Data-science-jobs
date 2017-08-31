@@ -1,12 +1,12 @@
 ---
 title: "Final Project Plan"
 author: "Benjamin Ackerman"
-date: "August 30, 2017"
-output: pdf_document
+date: "September 1, 2017"
+output: html_document
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE}
-library(qdapRegex)
+library(qdapRegex);library(knitr)
 ```
 
 ## Project choice: Option 3
@@ -15,12 +15,12 @@ Perform an analysis of "data scientist" jobs listed on job boards and on the emp
 ## Description of my plan
 1. Scrape data from the job postings on **[Kaggle](https://www.kaggle.com/jobs)**, and possibly from other job boards as well, such as **[LinkedIn](https://www.linkedin.com/jobs/)**, **[Data Elixer](https://jobs.dataelixir.com)**, **[R-users](https://www.r-users.com)** and **[Data Jobs](https://datajobs.com)**.
 
-```{r attempt to gather data from datajobs.com, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE}
+```{r attempt to gather data from datajobs.com, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,resultss='asis'}
 #Denote website name and pages
 website = 'https://datajobs.com/'
 pages = paste0("data-science-jobs",c("",paste0("~",2:30)))
 
-listings=list()
+links=jobs=companies=locations=list()
 for(i in 1:length(pages)){
   # Read in the given list of web listings
   thepage = readLines(paste0(website,pages[i]))
@@ -29,19 +29,36 @@ for(i in 1:length(pages)){
   # Extract the extensions of all of the job listings on that page
   pagenames<-unlist(rm_between(rawlistings, "href='", "'>", extract=TRUE))
   
+  cleanerlistings=lapply(pagenames, function(x) rm_between(rawlistings, x, "</em></div></div><img src=", extract=TRUE))
+
+  jobnames = unlist(rm_between(cleanerlistings, "<strong>","</strong>",extract=TRUE))
+  companydata = rm_between(cleanerlistings, "' class='stealth-header'>","</span>",extract=TRUE)
+  companyname = unlist(lapply(1:length(companydata), function(x) companydata[[x]][1]))
+  location = sub(".*class='stealth-header'>", "", lapply(1:length(companydata), function(x) companydata[[x]][2]))
+  
   # Get full URLs of the webpages
   listing_by_page=paste0(website,pagenames)
   
   if(i %in% c(1,30)){
-    listings[[i]]=listing_by_page[-length(listing_by_page)]}
+    links[[i]]=listing_by_page[-length(listing_by_page)]
+    jobs[[i]]=jobnames[-length(jobnames)]
+    companies[[i]]=companyname[-length(companyname)]
+    locations[[i]]=location[-length(location)]}
   if(i %in% c(2:29)){
-    listings[[i]]=listing_by_page[-c(length(listing_by_page)-1,length(listing_by_page))]}
+    links[[i]]=listing_by_page[-c(length(listing_by_page)-1,length(listing_by_page))]
+    jobs[[i]]=jobnames[-c(length(jobnames)-1,length(jobnames))]
+    companies[[i]]=companyname[-c(length(companyname)-1,length(companyname))]
+    locations[[i]]=location[-c(length(location)-1,length(location))]}
 }
 
-datajobs_postings = unique(unlist(listings))
+datajobs_postings = data.frame(jobs=unlist(jobs),companies=unlist(companies),locations=unlist(locations),links=unlist(links), stringsAsFactors = FALSE)
+
+datajobs_postings<-datajobs_postings[!duplicated(datajobs_postings),]
+kable(head(datajobs_postings))
 ```
 
-    a. I've started gathering URLs to all job postings on Data Jobs, hopefully can apply that code to other sites.  I've identified `r length(datajobs_postings)` unique job postings on Data Jobs.
+
+I've started gathering URLs to all job postings on Data Jobs, hopefully can apply that code to other sites.  I've identified `r nrow(datajobs_postings)` unique job postings on Data Jobs.
 
 2. Identify common elements of job postings, and extract information related to important skills that employers search for.
 3. Prepare data frame such that each row corresponds to a job listing, with variables for skills and geographic locations.
