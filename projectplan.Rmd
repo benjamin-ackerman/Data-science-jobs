@@ -9,7 +9,7 @@ output: html_document
 Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
 
 ## Description of my plan
-1. Scrape data from the job postings on **[Kaggle](https://www.kaggle.com/jobs)**, and possibly from other job boards as well, such as **[LinkedIn](https://www.linkedin.com/jobs/)**, **[Data Elixer](https://jobs.dataelixir.com)**, **[R-users](https://www.r-users.com)**, **[Stack Overflow](https://stackoverflow.com/jobs)** and **[Data Jobs](https://datajobs.com/data-science-jobs)** ([this](https://www.springboard.com/blog/data-science-jobs/) blog post lists 20 websites to find data science jobs).
+1. Scrape data from the job postings on **[Stack Overflow](https://stackoverflow.com/jobs)** and **[Data Jobs](https://datajobs.com/data-science-jobs)**, and possibly from other job boards as well, such as **[Kaggle](https://www.kaggle.com/jobs)**, **[LinkedIn](https://www.linkedin.com/jobs/)**, **[Data Elixer](https://jobs.dataelixir.com)** and **[R-users](https://www.r-users.com)** ([this](https://www.springboard.com/blog/data-science-jobs/) blog post lists 20 websites to find data science jobs).
 
      a. I've started gathering URLs to all job postings on Data Jobs and Stack Overflow, hopefully can apply that code to other sites. 
       
