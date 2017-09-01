@@ -77,8 +77,10 @@ listing_dat[,c("lat","long")] = lapply(listing_dat[,c("lat","long")], function(x
 
 # Bind the individual listing data to the original dataset
 datajobs_postings = cbind(datajobs_postings,listing_dat)
+```
 
-# Print the first ten job postings
+```{r datajob listings, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,results='asis'}
+# Print the first ten job postings from Data Jobs
 kable(datajobs_postings[1:10,])
 ```
 
@@ -131,8 +133,23 @@ for(j in 1:nrow(about_job)){
   
   about_job[j,descriptions]=responses
 }
+
+# Clean up tags
+about_job$tags = lapply(about_job$tags, function(x) gsub("-"," ", x))
+about_job$tags = lapply(about_job$tags, function(x) gsub("%23","#", x))
+about_job$tags = lapply(about_job$tags, function(x) gsub("%2b","+", x))
 ```
 
+```{r save data on harddrive, echo=FALSE, eval=FALSE}
+# Save current version of dataset to my own personal machine, date-stamped
+
+# Data Jobs listings
+write.csv(datajobs_postings,file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/datajobs_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
+# Stack Overflow listings
+write.csv(about_job[,-7],file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
+# Stack Overflow job tags
+write.table(unlist(about_job$tags),paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjobtags_',Sys.Date(),".txt"),quote=FALSE,row.names=FALSE,col.names=FALSE)
+```
 
 ```{r stack overflow jobs, echo=FALSE, results='asis',cache=TRUE,eval=TRUE}
 kable(about_job[1:10,-7])
@@ -155,10 +172,6 @@ m
 ## 3. Skills that Employers are Looking For
 Here is a word cloud of technical skill tags from the Stack Overflow job listings:
 ```{r stack overflow wordcloud, echo=FALSE,cache=TRUE,eval=TRUE, fig.align='center', fig.height=4.5,fig.width=4.5}
-about_job$tags = lapply(about_job$tags, function(x) gsub("-"," ", x))
-about_job$tags = lapply(about_job$tags, function(x) gsub("%23","#", x))
-about_job$tags = lapply(about_job$tags, function(x) gsub("%2b","+", x))
-
 d = data.frame(word = names(table(unlist(about_job$tags))), freq=as.numeric(table(unlist(about_job$tags))))
 
 set.seed(2)
