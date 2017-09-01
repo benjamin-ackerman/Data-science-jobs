@@ -6,3 +6,8 @@ kableExtra
 ggplot2
 ggmap
 leaflet
+NLP
+tm
+SnowballC
+RColorBrewer
+wordcloud

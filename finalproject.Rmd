@@ -7,6 +7,10 @@ output: html_document
 
 ```{r setup, echo=FALSE, warning=FALSE,message=FALSE}
 library(qdapRegex);library(knitr);library(dplyr);library(kableExtra);library(ggmap);library(leaflet)
+library("tm")
+library("SnowballC")
+library("wordcloud")
+library("RColorBrewer")
 ```
 
 Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
@@ -129,13 +133,15 @@ for(j in 1:nrow(about_job)){
 }
 ```
 
-```{r print stackexchange, echo=FALSE, results='asis',cache=TRUE,eval=TRUE}
+
+```{r stack overflow jobs, echo=FALSE, results='asis',cache=TRUE,eval=TRUE}
 kable(about_job[1:10,-7])
 ```
 
 There are `r nrow(about_job)` jobs listed on Stack Overflow that come up in my search.
 
 ## 2. Visualize Job Postings by Location
+Here, I visualize job postings from Data Jobs, since latitude and longitude are very readily available from the job listings!
 ```{r plot jobs on map, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
 # map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
 # 
@@ -145,3 +151,19 @@ m <- leaflet() %>%
   addMarkers(lng=datajobs_postings$long, lat=datajobs_postings$lat, popup = paste0("<b><a href='",datajobs_postings$links,"'>",datajobs_postings$company," - ",datajobs_postings$position,"</a></b>"))
 m
 ```
+
+## 3. Skills that Employers are Looking For
+Here is a word cloud of technical skill tags from the Stack Overflow job listings:
+```{r stack overflow wordcloud, echo=FALSE,cache=TRUE,eval=TRUE, fig.align='center', fig.height=4.5,fig.width=4.5}
+about_job$tags = lapply(about_job$tags, function(x) gsub("-"," ", x))
+about_job$tags = lapply(about_job$tags, function(x) gsub("%23","#", x))
+about_job$tags = lapply(about_job$tags, function(x) gsub("%2b","+", x))
+
+d = data.frame(word = names(table(unlist(about_job$tags))), freq=as.numeric(table(unlist(about_job$tags))))
+
+set.seed(2)
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+```
+
