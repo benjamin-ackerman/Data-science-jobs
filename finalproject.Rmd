@@ -1,7 +1,7 @@
 ---
 title: "Analysis of Data Science Job Postings"
 author: "Benjamin Ackerman"
-date: "September 1, 2017"
+date: "September 2, 2017"
 output: html_document
 ---
 
@@ -101,7 +101,10 @@ for(i in 1:length(pages)){
 }
 njobs = length(unlist(links))
 
-about_job = data.frame(job_type=rep(NA,njobs), 
+about_job = data.frame(position = rep(NA,njobs),
+                       company = rep(NA,njobs),
+                       location = rep(NA,njobs),
+                       job_type=rep(NA,njobs), 
                        experience=rep(NA,njobs), 
                        role=rep(NA,njobs),
                        industry=rep(NA,njobs),
@@ -132,6 +135,16 @@ for(j in 1:nrow(about_job)){
   responses<-responses[which(!is.na(responses))]
   
   about_job[j,descriptions]=responses
+  
+  loc = listing[grep("<div class=\"-location\">",listing)[1]+2]
+  loc=sub("</div>","",loc)
+  about_job$location[j]=sub("\\s+$", "", loc)
+  
+  jobtitle =listing[grep("\"title\": \"",listing)]
+  about_job$position[j] = unlist(rm_between(jobtitle, "\"title\": \"","\"",extract=TRUE))
+  
+  company =listing[grep("\"name\": \"",listing)]
+  about_job$company[j] = unlist(rm_between(company, "\"name\": \"","\"",extract=TRUE))
 }
 
 # Clean up tags
@@ -146,13 +159,13 @@ about_job$tags = lapply(about_job$tags, function(x) gsub("%2b","+", x))
 # Data Jobs listings
 write.csv(datajobs_postings,file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/datajobs_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
 # Stack Overflow listings
-write.csv(about_job[,-7],file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
+write.csv(about_job[,names(about_job) != "tags"],file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
 # Stack Overflow job tags
 write.table(unlist(about_job$tags),paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjobtags_',Sys.Date(),".txt"),quote=FALSE,row.names=FALSE,col.names=FALSE)
 ```
 
 ```{r stack overflow jobs, echo=FALSE, results='asis',cache=TRUE,eval=TRUE}
-kable(about_job[1:10,-7])
+kable(about_job[1:10,!names(about_job) %in% c("tags",'role')])
 ```
 
 There are `r nrow(about_job)` jobs listed on Stack Overflow that come up in my search.
@@ -178,5 +191,18 @@ set.seed(2)
 wordcloud(words = d$word, freq = d$freq, min.freq = 1,
           max.words=200, random.order=FALSE, rot.per=0.35, 
           colors=brewer.pal(8, "Dark2"))
+
+exp<-strsplit(about_job$experience,", ")
+kable(t(as.matrix(sort(table(unlist(exp)),decreasing=TRUE))),caption="Levels of Experience Requested")
 ```
 
+## Things to do next: 
+- Just look at data from Stack Overflow from jobs related to "data"
+- Look at trends in programming over time (though jobs only last about 4 weeks on Stack Overflow)
+    + consider limitation: hiring season/scraping bias
+    + undersampling/length bias - jobs in higher demand
+- Reproducibility issue: data are unique to when they are scraped
+    + list when data were pulled in report, save csv
+    + one option: scrape data every so often, saving csv files, take union of rows to maximize number of postings
+- PCA clustering - skills by sector
+- Are the public companies more likely to post more jobs? Private companies? Bigger companies?
