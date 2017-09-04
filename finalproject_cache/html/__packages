@@ -11,3 +11,8 @@ tm
 SnowballC
 RColorBrewer
 wordcloud
+rgeos
+sp
+rgdal
+httr
+bindrcpp
