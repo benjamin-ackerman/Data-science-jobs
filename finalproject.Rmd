@@ -1,19 +1,18 @@
 ---
 title: "Analysis of Data Science Job Postings"
 author: "Benjamin Ackerman"
-date: "September 4, 2017"
+date: "September 6, 2017"
 output: html_document
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE,message=FALSE}
-library(qdapRegex);library(knitr);library(dplyr);library(kableExtra);library(ggmap);library(leaflet)
+library(devtools);library(qdapRegex);library(knitr);library(dplyr);library(kableExtra);library(ggmap);library(leaflet)
 library("tm")
 library("SnowballC")
 library("wordcloud")
 library("RColorBrewer")
-# library(rgeos)
-# library(rgdal)
-# library(httr)
+library('RGlassdoor')
+library(rvest)
 ```
 
 Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
@@ -240,6 +239,7 @@ kable(t(as.matrix(sort(table(unlist(exp)),decreasing=TRUE))),caption="Levels of 
 
 ## Things to do next: 
 - Just look at data from Stack Overflow from jobs related to "data"
+- **LOOK AT GLASS DOOR API**
 - Look at trends in programming over time (though jobs only last about 4 weeks on Stack Overflow)
     + consider limitation: hiring season/scraping bias
     + undersampling/length bias - jobs in higher demand
