@@ -1,7 +1,7 @@
 ---
 title: "Analysis of Data Science Job Postings"
 author: "Benjamin Ackerman"
-date: "September 6, 2017"
+date: "September 18, 2017"
 output: html_document
 ---
 
@@ -13,6 +13,7 @@ library("wordcloud")
 library("RColorBrewer")
 library('RGlassdoor')
 library(rvest)
+library(jsonlite)
 ```
 
 Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
@@ -24,7 +25,7 @@ I have scraped data from [Datajobs.com](https://datajobs.com/data-science-jobs).
 - Extract job titles, company names, locations and links to job listings
     + From the job listing links, extract latitude and longitude from Google Maps figures, extract information on full vs part time jobs, and extract key skills (graduate degrees, coding experience, etc)
     
-```{r scrape data from datajobs.com, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,results='asis'}
+```{r scrape data from datajobs.com, echo=FALSE,eval=FALSE,cache=TRUE,warning=FALSE,results='asis'}
 #Denote website name and pages
 website = 'https://datajobs.com/'
 pages = paste0("data-science-jobs",c("",paste0("~",2:30)))
@@ -68,6 +69,7 @@ extract_listing<-function(x){
   latlong = unlist(rm_between(job_posting[grep("google.maps.LatLng",job_posting)][1],"google.maps.LatLng(",")",extract=TRUE))
   latlong = as.numeric(unlist(strsplit(latlong,",")))
   c(employ_type,latlong)
+  Sys.sleep(5)
 }
 
 # Apply function to all of the links in the dataframe
@@ -81,7 +83,7 @@ listing_dat[,c("lat","long")] = lapply(listing_dat[,c("lat","long")], function(x
 datajobs_postings = cbind(datajobs_postings,listing_dat)
 ```
 
-```{r datajob listings, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,results='asis'}
+```{r datajob listings, echo=FALSE,eval=FALSE,cache=TRUE,warning=FALSE,results='asis'}
 # Print the first ten job postings from Data Jobs
 kable(datajobs_postings[1:10,])
 ```
@@ -92,7 +94,7 @@ I have also begun scraping data from [Stack Overflow](https://stackoverflow.com/
 
 ```{r scrape data from stack overflow, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,results='asis'}
 website = "https://stackoverflow.com/jobs?sort=i&q=data+scientist"
-pages = c("",paste0("&pg=",c(2:6)))
+pages = c("",paste0("&pg=",c(2:7)))
 
 links = list()
 for(i in 1:length(pages)){
@@ -100,6 +102,7 @@ for(i in 1:length(pages)){
   rawlistings=thepage[grep("numberOfItems",thepage)]
 
   links[[i]] = unlist(rm_between(rawlistings, "url\":\"", "\"", extract=TRUE))
+  Sys.sleep(5)
 }
 njobs = length(unlist(links))
 
@@ -147,23 +150,13 @@ for(j in 1:nrow(about_job)){
   
   company =listing[grep("\"name\": \"",listing)]
   about_job$company[j] = unlist(rm_between(company, "\"name\": \"","\"",extract=TRUE))
+  Sys.sleep(5)
 }
 
 # Clean up tags
 about_job$tags = lapply(about_job$tags, function(x) gsub("-"," ", x))
 about_job$tags = lapply(about_job$tags, function(x) gsub("%23","#", x))
 about_job$tags = lapply(about_job$tags, function(x) gsub("%2b","+", x))
-```
-
-```{r save data on harddrive, echo=FALSE, eval=FALSE}
-# Save current version of dataset to my own personal machine, date-stamped
-
-# Data Jobs listings
-write.csv(datajobs_postings,file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/datajobs_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
-# Stack Overflow listings
-write.csv(about_job[,names(about_job) != "tags"],file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
-# Stack Overflow job tags
-write.table(unlist(about_job$tags),paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjobtags_',Sys.Date(),".txt"),quote=FALSE,row.names=FALSE,col.names=FALSE)
 ```
 
 ```{r stack overflow jobs, echo=FALSE, results='asis',cache=TRUE,eval=TRUE}
@@ -174,7 +167,7 @@ There are `r nrow(about_job)` jobs listed on Stack Overflow that come up in my s
 
 ## 2. Visualize Job Postings by Location
 Here, I visualize job postings from Data Jobs, since latitude and longitude are very readily available from the job listings!
-```{r plot Data Jobs jobs on map, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
+```{r plot Data Jobs jobs on map,eval=FALSE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
 # map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
 # 
 # ggmap(map) + geom_point(aes(x = long, y = lat,color='dark red',alpha=.5),size=3, data = datajobs_postings)+theme(legend.position="none")
@@ -184,7 +177,7 @@ m <- leaflet() %>%
 m
 ```
 
-```{r get zipcodes,eval=FALSE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
+```{r get zipcodes,eval=FALSE,cache=TRUE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
 length_of_degree <- function(degree, type = c("lat", "long")) {
   type <- match.arg(type)
   length_at_equator <- 110.5742727 # in kilometers
@@ -213,12 +206,24 @@ about_job$lat = jitter_latlong(about_job$lat,type='lat')
 about_job$lon = jitter_latlong(about_job$lon,type='long',about_job$lat)
 ```
 
+```{r save data on harddrive, echo=FALSE, eval=FALSE}
+# Save current version of dataset to my own personal machine, date-stamped
+
+# Data Jobs listings
+#write.csv(datajobs_postings,file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/datajobs_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
+
+# Stack Overflow listings
+write.csv(about_job[,names(about_job) != "tags"],file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
+# Stack Overflow job tags
+write.table(unlist(about_job$tags),paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjobtags_',Sys.Date(),".txt"),quote=FALSE,row.names=FALSE,col.names=FALSE)
+```
+
 I used code from [this repository](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R) to jitter the latitude and longitude so that multiple points per city could be seen.
 
-```{r plot stack overflow jobs on map, eval=FALSE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
+```{r plot stack overflow jobs on map, eval=TRUE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
 m <- leaflet() %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  addMarkers(lng=test$lon, lat=test$lat, popup = paste0("<b><a href='",test$link,"'>",test$company," - ",test$position,"</a></b>"))
+  addMarkers(lng=about_job$lon, lat=about_job$lat, popup = paste0("<b><a href='",about_job$link,"'>",about_job$company," - ",about_job$position,"</a></b>"))
              #,clusterOptions = markerClusterOptions())
 m
 ```
