@@ -1,7 +1,7 @@
 ---
 title: "Analysis of Data Science Job Postings"
 author: "Benjamin Ackerman"
-date: "September 19, 2017"
+date: "September 20, 2017"
 output: html_document
 ---
 
@@ -19,13 +19,14 @@ library(jsonlite)
 Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
 
 ## 1. Scrape Data from Job Search Boards
-I have scraped data from [Datajobs.com](https://datajobs.com/data-science-jobs).  They have a specific listing of data science jobs, which are formatted fairly consistently.  Here is my approach to obtain data:
-
-- Create a vector of the pages that list jobs
-- Extract job titles, company names, locations and links to job listings
-    + From the job listing links, extract latitude and longitude from Google Maps figures, extract information on full vs part time jobs, and extract key skills (graduate degrees, coding experience, etc)
     
 ```{r scrape data from datajobs.com, echo=FALSE,eval=FALSE,cache=TRUE,warning=FALSE,results='asis'}
+# I have scraped data from [Datajobs.com](https://datajobs.com/data-science-jobs).  They have a specific listing of data science jobs, which are formatted fairly consistently.  Here is my approach to obtain data:
+# 
+# - Create a vector of the pages that list jobs
+# - Extract job titles, company names, locations and links to job listings
+#     + From the job listing links, extract latitude and longitude from Google Maps figures, extract information on full vs part time jobs, and extract key skills (graduate degrees, coding experience, etc)
+
 #Denote website name and pages
 website = 'https://datajobs.com/'
 pages = paste0("data-science-jobs",c("",paste0("~",2:30)))
@@ -91,7 +92,7 @@ Above are the first 10 job listings from Data Jobs. I've identified `r nrow(data
 ```
 
 
-I have also begun scraping data from [Stack Overflow](https://stackoverflow.com/jobs) by searching for jobs with the term "Data Scientist." Here's some of the data I've been able to extract:
+I have begun scraping data from [Stack Overflow](https://stackoverflow.com/jobs) by searching for jobs with the term "Data Scientist." Here's some of the data I've been able to extract:
 
 ```{r scrape data from stack overflow, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,results='asis'}
 website = "https://stackoverflow.com/jobs?sort=i&q=data+scientist"
@@ -164,11 +165,12 @@ about_job$tags = lapply(about_job$tags, function(x) gsub("%2b","+", x))
 kable(about_job[1:10,!names(about_job) %in% c("tags",'role')])
 ```
 
-There are `r nrow(about_job)` jobs listed on Stack Overflow that come up in my search.
+There are `r nrow(about_job)` jobs listed on Stack Overflow that come up in my search from `r Sys.Date()`.
 
 ## 2. Visualize Job Postings by Location
-Here, I visualize job postings from Data Jobs, since latitude and longitude are very readily available from the job listings!
 ```{r plot Data Jobs jobs on map,eval=FALSE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
+# Here, I visualize job postings from Data Jobs, since latitude and longitude are very readily available from the job listings!
+
 # map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
 # 
 # ggmap(map) + geom_point(aes(x = long, y = lat,color='dark red',alpha=.5),size=3, data = datajobs_postings)+theme(legend.position="none")
@@ -219,7 +221,7 @@ write.csv(about_job[,names(about_job) != "tags"],file=paste0('/Users/backerman/D
 write.table(unlist(about_job$tags),paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjobtags_',Sys.Date(),".txt"),quote=FALSE,row.names=FALSE,col.names=FALSE)
 ```
 
-I used code from [this repository](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R) to jitter the latitude and longitude so that multiple points per city could be seen.
+Here, I visualize where jobs posted on Stack Overflow are located.  I use the function `geocode` to obtain latitude and longitude coordinates on the cities.  I use code from [this repository](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R) to jitter the latitude and longitude, so that multiple points per city could be seen.
 
 ```{r plot stack overflow jobs on map, eval=TRUE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
 about_job = read.csv("/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_2017-09-18.csv",header=TRUE)
@@ -247,12 +249,25 @@ kable(t(as.matrix(sort(table(unlist(exp)),decreasing=TRUE))),caption="Levels of 
 
 ## Things to do next: 
 - Just look at data from Stack Overflow from jobs related to "data"
-- **LOOK AT GLASS DOOR API**
+- Waiting to obtain data dump from David Robinson at Stack Overflow
+- **LOOK AT GLASS DOOR API?** - I'm having trouble figuring out how to use this... I can only get aggregate level data, not specific data on individual job postings
+- *start writing* - write up introduction/methods used
+- scrape data from skills section:
+    + education (Masters vs. PhD) and preferred departments of degrees
+    + years of experience
+    + unique skill requests
+    + more programming skills
+
+### Analysis Plan:
 - Look at trends in programming over time (though jobs only last about 4 weeks on Stack Overflow)
     + consider limitation: hiring season/scraping bias
     + undersampling/length bias - jobs in higher demand
-- Reproducibility issue: data are unique to when they are scraped
-    + list when data were pulled in report, save csv
-    + one option: scrape data every so often, saving csv files, take union of rows to maximize number of postings
 - PCA clustering - skills by sector
 - Are the public companies more likely to post more jobs? Private companies? Bigger companies?
+- Compare job postings from two different job boards
+
+### Limitations:
+- Reproducibility issue: data are unique to when they are scraped, and I'm obtaining data from a data dump
+    + list when data were pulled in report, save csv
+    + one option: scrape data every so often, saving csv files, take union of rows to maximize number of postings
+- Maybe not generalizable: potential bias in just looking at Stack Overflow, could attract job postings from certain types of industries
