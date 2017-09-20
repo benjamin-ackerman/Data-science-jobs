@@ -16,3 +16,8 @@ sp
 rgdal
 httr
 bindrcpp
+devtools
+RGlassdoor
+xml2
+rvest
+jsonlite

@@ -1,7 +1,7 @@
 ---
 title: "Analysis of Data Science Job Postings"
 author: "Benjamin Ackerman"
-date: "September 18, 2017"
+date: "September 19, 2017"
 output: html_document
 ---
 
@@ -86,9 +86,10 @@ datajobs_postings = cbind(datajobs_postings,listing_dat)
 ```{r datajob listings, echo=FALSE,eval=FALSE,cache=TRUE,warning=FALSE,results='asis'}
 # Print the first ten job postings from Data Jobs
 kable(datajobs_postings[1:10,])
+Above are the first 10 job listings from Data Jobs. I've identified `r nrow(datajobs_postings)` total unique job postings on Data Jobs.
+
 ```
 
-Above are the first 10 job listings from Data Jobs. I've identified `r nrow(datajobs_postings)` total unique job postings on Data Jobs.
 
 I have also begun scraping data from [Stack Overflow](https://stackoverflow.com/jobs) by searching for jobs with the term "Data Scientist." Here's some of the data I've been able to extract:
 
@@ -221,6 +222,8 @@ write.table(unlist(about_job$tags),paste0('/Users/backerman/Documents/JHSPH/3rd 
 I used code from [this repository](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R) to jitter the latitude and longitude so that multiple points per city could be seen.
 
 ```{r plot stack overflow jobs on map, eval=TRUE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
+about_job = read.csv("/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_2017-09-18.csv",header=TRUE)
+
 m <- leaflet() %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
   addMarkers(lng=about_job$lon, lat=about_job$lat, popup = paste0("<b><a href='",about_job$link,"'>",about_job$company," - ",about_job$position,"</a></b>"))
