@@ -221,15 +221,15 @@ write.csv(about_job[,names(about_job) != "tags"],file=paste0('/Users/backerman/D
 write.table(unlist(about_job$tags),paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjobtags_',Sys.Date(),".txt"),quote=FALSE,row.names=FALSE,col.names=FALSE)
 ```
 
-Here, I visualize where jobs posted on Stack Overflow are located.  I use the function `geocode` to obtain latitude and longitude coordinates on the cities.  I use code from [this repository](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R) to jitter the latitude and longitude, so that multiple points per city could be seen.
+Here, I visualize where jobs posted on Stack Overflow are located.  I use the function `geocode` to obtain latitude and longitude coordinates on the cities.  I use code from [this repository](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R) to jitter the latitude and longitude, so that multiple points per city can be seen.
 
 ```{r plot stack overflow jobs on map, eval=TRUE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
 about_job = read.csv("/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_2017-09-18.csv",header=TRUE)
 
 m <- leaflet() %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  addMarkers(lng=about_job$lon, lat=about_job$lat, popup = paste0("<b><a href='",about_job$link,"'>",about_job$company," - ",about_job$position,"</a></b>"))
-             #,clusterOptions = markerClusterOptions())
+  addMarkers(lng=about_job$lon, lat=about_job$lat, popup = paste0("<b><a href='",about_job$link,"'>",about_job$company," - ",about_job$position,"</a></b>")
+             ,clusterOptions = markerClusterOptions())
 m
 ```
 
