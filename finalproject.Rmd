@@ -1,7 +1,7 @@
 ---
 title: "Analysis of Data Science Job Postings"
 author: "Benjamin Ackerman"
-date: "September 20, 2017"
+date: "September 25, 2017"
 output: html_document
 ---
 
