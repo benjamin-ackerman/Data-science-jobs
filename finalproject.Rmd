@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE,message=FALSE}
-library(devtools);library(qdapRegex);library(knitr);library(dplyr);library(kableExtra);library(ggmap);library(leaflet)
+library(devtools);library(qdapRegex);library(knitr);library(dplyr);library(kableExtra);library(ggmap);library(leaflet);library(stringr)
 library("tm")
 library("SnowballC")
 library("wordcloud")
@@ -104,9 +104,9 @@ for(i in 1:length(pages)){
   rawlistings=thepage[grep("numberOfItems",thepage)]
 
   links[[i]] = unlist(rm_between(rawlistings, "url\":\"", "\"", extract=TRUE))
-  Sys.sleep(5)
+  Sys.sleep(4)
 }
-njobs = length(unlist(links))
+njobs = length(unique(unlist(links)))
 
 about_job = data.frame(position = rep(NA,njobs),
                        company = rep(NA,njobs),
@@ -118,7 +118,7 @@ about_job = data.frame(position = rep(NA,njobs),
                        company_size=rep(NA,njobs),
                        company_type=rep(NA,njobs), 
                        tags = rep(NA,njobs),
-                       link=unlist(links),
+                       link=unique(unlist(links)),
                        stringsAsFactors = FALSE)
 
 for(j in 1:nrow(about_job)){
@@ -159,28 +159,16 @@ for(j in 1:nrow(about_job)){
 about_job$tags = lapply(about_job$tags, function(x) gsub("-"," ", x))
 about_job$tags = lapply(about_job$tags, function(x) gsub("%23","#", x))
 about_job$tags = lapply(about_job$tags, function(x) gsub("%2b","+", x))
-```
 
-```{r stack overflow jobs, echo=FALSE, results='asis',cache=TRUE,eval=TRUE}
-kable(about_job[1:10,!names(about_job) %in% c("tags",'role')])
-```
+# Clean up location data
+about_job$location=gsub("&#252;rn","urem",about_job$location)
 
-There are `r nrow(about_job)` jobs listed on Stack Overflow that come up in my search from `r Sys.Date()`.
+# Geocode!
+latlon = geocode(about_job$location,output='latlon')
+# Bind geocodes to data
+about_job = cbind(about_job,latlon)
 
-## 2. Visualize Job Postings by Location
-```{r plot Data Jobs jobs on map,eval=FALSE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
-# Here, I visualize job postings from Data Jobs, since latitude and longitude are very readily available from the job listings!
-
-# map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
-# 
-# ggmap(map) + geom_point(aes(x = long, y = lat,color='dark red',alpha=.5),size=3, data = datajobs_postings)+theme(legend.position="none")
-m <- leaflet() %>%
-  addTiles() %>%  # Add default OpenStreetMap map tiles
-  addMarkers(lng=datajobs_postings$long, lat=datajobs_postings$lat, popup = paste0("<b><a href='",datajobs_postings$links,"'>",datajobs_postings$company," - ",datajobs_postings$position,"</a></b>"))
-m
-```
-
-```{r get zipcodes,eval=FALSE,cache=TRUE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
+# Functions to jitter latitude and longitude
 length_of_degree <- function(degree, type = c("lat", "long")) {
   type <- match.arg(type)
   length_at_equator <- 110.5742727 # in kilometers
@@ -200,36 +188,50 @@ jitter_latlong <- function(coord, type = c("lat", "long"), latitude, km = 1) {
 jitter_latlong <- Vectorize(jitter_latlong,
                             vectorize.args = c("coord", "latitude"))
 
-about_job$location=gsub("&#252;rn","urem",about_job$location)
-
-latlon = geocode(about_job$location,output='latlon')
-about_job = cbind(about_job,latlon)
-
+# Jitter latitude and longitude
 about_job$lat = jitter_latlong(about_job$lat,type='lat')
 about_job$lon = jitter_latlong(about_job$lon,type='long',about_job$lat)
+
 ```
 
-```{r save data on harddrive, echo=FALSE, eval=FALSE}
+```{r stack overflow jobs, echo=FALSE, results='asis',cache=TRUE,eval=TRUE}
+kable(about_job[1:10,!names(about_job) %in% c("tags",'role',"lat","lon")])
+```
+
+There are `r nrow(about_job)` unique jobs listed on Stack Overflow that come up in my search from `r Sys.Date()`.
+
+## 2. Visualize Job Postings by Location
+```{r plot Data Jobs jobs on map,eval=FALSE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
+# Here, I visualize job postings from Data Jobs, since latitude and longitude are very readily available from the job listings!
+
+# map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
+# 
+# ggmap(map) + geom_point(aes(x = long, y = lat,color='dark red',alpha=.5),size=3, data = datajobs_postings)+theme(legend.position="none")
+m <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng=datajobs_postings$long, lat=datajobs_postings$lat, popup = paste0("<b><a href='",datajobs_postings$links,"'>",datajobs_postings$company," - ",datajobs_postings$position,"</a></b>"))
+m
+```
+
+```{r save data on harddrive, echo=FALSE, eval=TRUE}
 # Save current version of dataset to my own personal machine, date-stamped
 
 # Data Jobs listings
 #write.csv(datajobs_postings,file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/datajobs_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
 
+about_job2 = about_job
+about_job2$tags = unlist(lapply(about_job2$tags, function(x) str_c(x,collapse="_")))
+
 # Stack Overflow listings
-write.csv(about_job[,names(about_job) != "tags"],file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
-# Stack Overflow job tags
-write.table(unlist(about_job$tags),paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjobtags_',Sys.Date(),".txt"),quote=FALSE,row.names=FALSE,col.names=FALSE)
+write.csv(about_job2,file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
 ```
 
 Here, I visualize where jobs posted on Stack Overflow are located.  I use the function `geocode` to obtain latitude and longitude coordinates on the cities.  I use code from [this repository](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R) to jitter the latitude and longitude, so that multiple points per city can be seen.
 
 ```{r plot stack overflow jobs on map, eval=TRUE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
-about_job = read.csv("/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_2017-09-18.csv",header=TRUE)
-
 m <- leaflet() %>%
   addTiles() %>%  # Add default OpenStreetMap map tiles
-  addMarkers(lng=about_job$lon, lat=about_job$lat, popup = paste0("<b><a href='",about_job$link,"'>",about_job$company," - ",about_job$position,"</a></b>")
-             ,clusterOptions = markerClusterOptions())
+  addMarkers(lng=about_job$lon, lat=about_job$lat, popup = paste0("<b><a href='",about_job$link,"'>",about_job$company," - ",about_job$position,"</a></b>"),clusterOptions = markerClusterOptions())
 m
 ```
 
