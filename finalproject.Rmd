@@ -271,7 +271,7 @@ stackjobs = readRDS("../stackjobs.rds")
 stackjobs.df <- split(stackjobs, stackjobs$year)
 l <- leaflet() %>% addTiles()
 
-colors<-c("lightred","red","orange","lightgreen","green","lightblue","blue","purple")
+colors<-c("pink","red","orange","lightgreen","green","lightblue","blue","purple")
 
 names(stackjobs.df) %>%
   purrr::walk( function(df) {
@@ -294,7 +294,8 @@ l %>% setView(lng = -100.11,lat=40, zoom = 4) %>%
   addLayersControl(
     overlayGroups = names(stackjobs.df),
     options = layersControlOptions(collapsed = FALSE)
-  )
+  ) %>% 
+  addLegend("bottomleft",title="Year",colors=colors,labels=2010:2017)
 ```
 
 Here is a plot (yes, I figured out how to use `ggplot`...) that shows trends in number of jobs posted by US region over the past several years.
