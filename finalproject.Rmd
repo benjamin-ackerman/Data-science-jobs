@@ -283,7 +283,7 @@ names(stackjobs.df) %>%
                           icon = awesomeIcons(icon = '',iconColor = 'black',
                                               library = 'ion',markerColor = colors[as.numeric(df)-2009]),
                           #label=~as.character(mag),
-                          #popup=~as.character(mag),
+                          #popup = ~Title,
                           group = df#,
                           #clusterOptions = markerClusterOptions(removeOutsideVisibleBounds = F),
                           #labelOptions = labelOptions(noHide = F,
