@@ -351,6 +351,12 @@ fewest_posts = time_trend%>%
 
 kable(fewest_posts,caption="Months with the fewest job postings by year")
 
+most_posts = time_trend%>% 
+  group_by(year) %>% 
+  slice(which.max(n))
+
+kable(most_posts,caption="Months with the most job postings by year")
+
 salaries <- stackjobs %>% 
   filter(SalaryCurrency == "USD") %>% 
   arrange(SalaryMin) %>% 
