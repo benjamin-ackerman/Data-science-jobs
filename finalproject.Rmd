@@ -333,7 +333,7 @@ wordcloud(words = d$word, freq = d$freq, min.freq = 1,
 ```
 
 ## More EDA:
-```{r eda plots, echo=FALSE,eval=TRUE, fig.align='center', fig.height=8,fig.width=10}
+```{r eda plots, echo=FALSE,eval=TRUE, fig.align='center', fig.height=8,fig.width=10,results='asis'}
 exp<-strsplit(about_job$experience,", ")
 kable(t(as.matrix(sort(table(unlist(exp)),decreasing=TRUE))),caption="Levels of Experience Requested")
 
@@ -350,6 +350,12 @@ fewest_posts = time_trend%>%
   slice(which.min(n))
 
 kable(fewest_posts,caption="Months with the fewest job postings by year")
+
+salaries <- stackjobs %>% 
+  filter(SalaryCurrency == "USD") %>% 
+  arrange(SalaryMin) %>% 
+  group_by(year,month) %>% 
+  summarise(avgstart = mean(SalaryMin,na.rm=TRUE))
 ```
 
 
