@@ -202,7 +202,7 @@ kable(about_job[1:10,!names(about_job) %in% c("tags",'role',"lat","lon")])
 
 There are `r nrow(about_job)` unique jobs listed on Stack Overflow that come up in my latest search.
 
-In addition to the manual scraping I have performed, I have also received a database of jobs posted on Stack Overflow over the years from David Robinson, a Data Scientist at Stack Overflow.  Per his request, the data will be kept private.
+In addition to the manual scraping I have performed, I have also received a database of jobs posted on Stack Overflow over the years from Dave Robinson, a Data Scientist at Stack Overflow.  Per his request, the data will be kept private.
 ```{r read and clean stack overflow data dump, eval=FALSE, echo=FALSE}
 newdat<-readRDS('../data_scientist.rds')
 
@@ -265,7 +265,7 @@ m <- leaflet() %>%
 m
 ```
 
-Here, I visualize the Stack Overflow jobs using data provided from David Robinson.  Markers are color coded by the year that they were posted.
+Here, I visualize the Stack Overflow jobs using data provided from Dave Robinson.  Markers are color coded by the year that they were posted.
 I use the function `geocode` from the `ggmaps` package to obtain latitude and longitude coordinates on the cities.  I use code from [this repository](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R) to jitter the latitude and longitude, so that multiple points per city can be seen.  The map is interactive: select data points by year to view the geographic trends in job listings!
 
 ```{r plot stack overflow data dump jobs on map, message=FALSE,fig.align='center',fig.height=8,fig.width=10,warning=FALSE,echo=FALSE}
