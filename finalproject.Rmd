@@ -94,7 +94,7 @@ Above are the first 10 job listings from Data Jobs. I've identified `r nrow(data
 
 I have begun scraping data from [Stack Overflow](https://stackoverflow.com/jobs) by searching for jobs with the term "Data Scientist." Here's some of the data I've been able to extract:
 
-```{r scrape data from stack overflow, echo=FALSE,eval=TRUE,cache=TRUE,warning=FALSE,results='asis'}
+```{r scrape data from stack overflow, echo=FALSE,eval=FALSE,cache=TRUE,warning=FALSE,results='asis'}
 website = "https://stackoverflow.com/jobs?sort=i&q=data+scientist"
 pages = c("",paste0("&pg=",c(2:7)))
 
@@ -195,6 +195,8 @@ about_job$lon = jitter_latlong(about_job$lon,type='long',about_job$lat)
 ```
 
 ```{r stack overflow jobs, echo=FALSE, results='asis',cache=TRUE,eval=TRUE}
+about_job = read.csv("../stackoverflowjob_2017-09-25.csv",header=TRUE)
+
 kable(about_job[1:10,!names(about_job) %in% c("tags",'role',"lat","lon")])
 ```
 
@@ -251,7 +253,6 @@ kable(t(as.matrix(sort(table(unlist(exp)),decreasing=TRUE))),caption="Levels of 
 
 ## Things to do next: 
 - Just look at data from Stack Overflow from jobs related to "data"
-- Waiting to obtain data dump from David Robinson at Stack Overflow
 - **LOOK AT GLASS DOOR API?** - I'm having trouble figuring out how to use this... I can only get aggregate level data, not specific data on individual job postings
 - *start writing* - write up introduction/methods used
 - scrape data from skills section:
@@ -273,3 +274,64 @@ kable(t(as.matrix(sort(table(unlist(exp)),decreasing=TRUE))),caption="Levels of 
     + list when data were pulled in report, save csv
     + one option: scrape data every so often, saving csv files, take union of rows to maximize number of postings
 - Maybe not generalizable: potential bias in just looking at Stack Overflow, could attract job postings from certain types of industries
+
+```{r read and clean stack overflow data dump, eval=FALSE, echo=FALSE}
+newdat<-readRDS('../data_scientist.rds')
+
+# Split up the date into year, month, day
+newdat[,c("year","month","day")]<-str_split(newdat$DatePosted,"-",simplify=TRUE)
+
+# Add latitude and longitude
+tags<-(unlist(str_split(newdat$Tags," ")))
+
+# Clean Jobs that have multiple locataions 
+repeats<-unique(newdat$JobId[which(duplicated(newdat$JobId))])
+repeat_locations<-sapply(1:length(repeats),function(x){
+   str_split(newdat$LocationString[which(newdat$JobId == repeats[x])],"; ",simplify=TRUE)[1,]
+})
+newdat$LocationString[which(newdat$JobId %in% repeats)] = unlist(repeat_locations)
+
+# Geocode locations to plot them
+test<-geocode(newdat$LocationString,output='latlon')
+
+newdat$lat = jitter_latlong(test$lat,type='lat')
+newdat$lon = jitter_latlong(test$lon,type='long',newdat$lat)
+
+# Save updated dataset as "stackjobs.rds"
+saveRDS(newdat,"../stackjobs.rds")
+```
+
+
+```{r load stack overflow jobs and work with it, message=FALSE,fig.align='center',fig.height=8,fig.width=10,warning=FALSE,echo=FALSE}
+# Read in edited data
+stackjobs = readRDS("../stackjobs.rds")
+
+# Prepare for plotting
+stackjobs.df <- split(stackjobs, stackjobs$year)
+l <- leaflet() %>% addTiles()
+
+colors<-c("lightred","red","orange","lightgreen","green","lightblue","blue","purple")
+
+names(stackjobs.df) %>%
+  purrr::walk( function(df) {
+    l <<- l %>%
+      addAwesomeMarkers(data=stackjobs.df[[df]],
+                          lng=~lon, lat=~lat,
+                          icon = awesomeIcons(icon = '',iconColor = 'black',
+                                              library = 'ion',markerColor = colors[as.numeric(df)-2009]),
+                          #label=~as.character(mag),
+                          #popup=~as.character(mag),
+                          group = df#,
+                          #clusterOptions = markerClusterOptions(removeOutsideVisibleBounds = F),
+                          #labelOptions = labelOptions(noHide = F,
+                          #                             direction = 'auto'))
+      )
+  })
+
+# Plot jobs!
+l %>% setView(lng = -100.11,lat=40, zoom = 4) %>%
+  addLayersControl(
+    overlayGroups = names(stackjobs.df),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+```
