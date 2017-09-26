@@ -195,94 +195,19 @@ about_job$lon = jitter_latlong(about_job$lon,type='long',about_job$lat)
 ```
 
 ```{r stack overflow jobs, echo=FALSE, results='asis',cache=TRUE,eval=TRUE}
-about_job = read.csv("../stackoverflowjob_2017-09-25.csv",header=TRUE)
+about_job = read.csv("../stackoverflowjob_2017-09-25.csv",header=TRUE,stringsAsFactors = FALSE)
 
 kable(about_job[1:10,!names(about_job) %in% c("tags",'role',"lat","lon")])
 ```
 
 There are `r nrow(about_job)` unique jobs listed on Stack Overflow that come up in my search from `r Sys.Date()`.
 
-## 2. Visualize Job Postings by Location
-```{r plot Data Jobs jobs on map,eval=FALSE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
-# Here, I visualize job postings from Data Jobs, since latitude and longitude are very readily available from the job listings!
-
-# map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
-# 
-# ggmap(map) + geom_point(aes(x = long, y = lat,color='dark red',alpha=.5),size=3, data = datajobs_postings)+theme(legend.position="none")
-m <- leaflet() %>%
-  addTiles() %>%  # Add default OpenStreetMap map tiles
-  addMarkers(lng=datajobs_postings$long, lat=datajobs_postings$lat, popup = paste0("<b><a href='",datajobs_postings$links,"'>",datajobs_postings$company," - ",datajobs_postings$position,"</a></b>"))
-m
-```
-
-```{r save data on harddrive, echo=FALSE, eval=TRUE}
-# Save current version of dataset to my own personal machine, date-stamped
-
-# Data Jobs listings
-#write.csv(datajobs_postings,file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/datajobs_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
-
-about_job2 = about_job
-about_job2$tags = unlist(lapply(about_job2$tags, function(x) str_c(x,collapse="_")))
-
-# Stack Overflow listings
-write.csv(about_job2,file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
-```
-
-Here, I visualize where jobs posted on Stack Overflow are located.  I use the function `geocode` to obtain latitude and longitude coordinates on the cities.  I use code from [this repository](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R) to jitter the latitude and longitude, so that multiple points per city can be seen.
-
-```{r plot stack overflow jobs on map, eval=TRUE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
-m <- leaflet() %>%
-  addTiles() %>%  # Add default OpenStreetMap map tiles
-  addMarkers(lng=about_job$lon, lat=about_job$lat, popup = paste0("<b><a href='",about_job$link,"'>",about_job$company," - ",about_job$position,"</a></b>"),clusterOptions = markerClusterOptions())
-m
-```
-
-## 3. Skills that Employers are Looking For
-Here is a word cloud of technical skill tags from the Stack Overflow job listings:
-```{r stack overflow wordcloud, echo=FALSE,cache=TRUE,eval=TRUE, fig.align='center', fig.height=4.5,fig.width=4.5}
-d = data.frame(word = names(table(unlist(about_job$tags))), freq=as.numeric(table(unlist(about_job$tags))))
-
-set.seed(2)
-wordcloud(words = d$word, freq = d$freq, min.freq = 1,
-          max.words=200, random.order=FALSE, rot.per=0.35, 
-          colors=brewer.pal(8, "Dark2"))
-
-exp<-strsplit(about_job$experience,", ")
-kable(t(as.matrix(sort(table(unlist(exp)),decreasing=TRUE))),caption="Levels of Experience Requested")
-```
-
-## Things to do next: 
-- Just look at data from Stack Overflow from jobs related to "data"
-- **LOOK AT GLASS DOOR API?** - I'm having trouble figuring out how to use this... I can only get aggregate level data, not specific data on individual job postings
-- *start writing* - write up introduction/methods used
-- scrape data from skills section:
-    + education (Masters vs. PhD) and preferred departments of degrees
-    + years of experience
-    + unique skill requests
-    + more programming skills
-
-### Analysis Plan:
-- Look at trends in programming over time (though jobs only last about 4 weeks on Stack Overflow)
-    + consider limitation: hiring season/scraping bias
-    + undersampling/length bias - jobs in higher demand
-- PCA clustering - skills by sector
-- Are the public companies more likely to post more jobs? Private companies? Bigger companies?
-- Compare job postings from two different job boards
-
-### Limitations:
-- Reproducibility issue: data are unique to when they are scraped, and I'm obtaining data from a data dump
-    + list when data were pulled in report, save csv
-    + one option: scrape data every so often, saving csv files, take union of rows to maximize number of postings
-- Maybe not generalizable: potential bias in just looking at Stack Overflow, could attract job postings from certain types of industries
-
+In addition to the manual scraping I have performed, I have also received a database of jobs posted on Stack Overflow over the years from David Robinson, a Data Scientist at Stack Overflow.  Per his request, the data will be kept private.
 ```{r read and clean stack overflow data dump, eval=FALSE, echo=FALSE}
 newdat<-readRDS('../data_scientist.rds')
 
 # Split up the date into year, month, day
 newdat[,c("year","month","day")]<-str_split(newdat$DatePosted,"-",simplify=TRUE)
-
-# Add latitude and longitude
-tags<-(unlist(str_split(newdat$Tags," ")))
 
 # Clean Jobs that have multiple locataions 
 repeats<-unique(newdat$JobId[which(duplicated(newdat$JobId))])
@@ -301,7 +226,43 @@ newdat$lon = jitter_latlong(test$lon,type='long',newdat$lat)
 saveRDS(newdat,"../stackjobs.rds")
 ```
 
+## 2. Visualize Job Postings by Location
+```{r plot Data Jobs jobs on map,eval=FALSE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
+# Here, I visualize job postings from Data Jobs, since latitude and longitude are very readily available from the job listings!
 
+# map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
+# 
+# ggmap(map) + geom_point(aes(x = long, y = lat,color='dark red',alpha=.5),size=3, data = datajobs_postings)+theme(legend.position="none")
+m <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng=datajobs_postings$long, lat=datajobs_postings$lat, popup = paste0("<b><a href='",datajobs_postings$links,"'>",datajobs_postings$company," - ",datajobs_postings$position,"</a></b>"))
+m
+```
+
+```{r save data on harddrive, echo=FALSE, eval=FALSE}
+# Save current version of dataset to my own personal machine, date-stamped
+
+# Data Jobs listings
+#write.csv(datajobs_postings,file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/datajobs_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
+
+about_job2 = about_job
+about_job2$tags = unlist(lapply(about_job2$tags, function(x) str_c(x,collapse="_")))
+
+# Stack Overflow listings
+write.csv(about_job2,file=paste0('/Users/backerman/Documents/JHSPH/3rd Year/Advanced Data Science/stackoverflowjob_',Sys.Date(),".csv"),row.names=FALSE,quote=TRUE)
+```
+
+Here, I visualize where jobs posted on Stack Overflow are located *using the data I scraped manually*.  I use the function `geocode` to obtain latitude and longitude coordinates on the cities.  I use code from [this repository](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R) to jitter the latitude and longitude, so that multiple points per city can be seen.
+
+```{r plot stack overflow jobs on map, eval=TRUE, echo=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10,cache=TRUE,warning=FALSE}
+m <- leaflet() %>%
+  addTiles() %>%  # Add default OpenStreetMap map tiles
+  addMarkers(lng=about_job$lon, lat=about_job$lat, popup = paste0("<b><a href='",about_job$link,"'>",about_job$company," - ",about_job$position,"</a></b>"),clusterOptions = markerClusterOptions())
+m
+```
+
+
+Next, I visualize the Stack Overflow jobs using data provided from David Robinson.  Markers are color coded by the year that they were posted.
 ```{r load stack overflow jobs and work with it, message=FALSE,fig.align='center',fig.height=8,fig.width=10,warning=FALSE,echo=FALSE}
 # Read in edited data
 stackjobs = readRDS("../stackjobs.rds")
@@ -335,3 +296,63 @@ l %>% setView(lng = -100.11,lat=40, zoom = 4) %>%
     options = layersControlOptions(collapsed = FALSE)
   )
 ```
+
+Here is a plot (yes, I figured out how to use `ggplot`...) that shows trends in number of jobs posted by US region over the past several years.
+```{r jobs by region and time, echo=FALSE, warning=FALSE,message=FALSE,fig.align='center',fig.height=8,fig.width=10}
+state.data=data.frame(StateCode=state.abb,Division=state.division) #%>% 
+  #inner_join(data.frame(Division=levels(state.division),colors=rainbow(9)))
+
+division_trend<-stackjobs %>% 
+  inner_join(state.data) %>% 
+  group_by(year,Division) %>% 
+  count()# %>% 
+  #inner_join(state.data)
+  
+p = ggplot(division_trend,aes(x=year,y=n,group=Division,colour=Division))
+p + geom_line()
+```
+
+
+## 3. Skills that Employers are Looking For
+Here is a word cloud of technical skill tags from the Stack Overflow job listings (data dump, not manual scraping):
+```{r stack overflow wordcloud, echo=FALSE,cache=TRUE,eval=TRUE, fig.align='center', fig.height=4.5,fig.width=4.5}
+#d = data.frame(word = names(table(unlist(about_job$tags))), freq=as.numeric(table(unlist(about_job$tags))))
+
+unique_jobs<-stackjobs %>% 
+   filter(!duplicated(JobId))
+tags<-(unlist(str_split(unique_jobs$Tags," "))) %>% str_replace_all("-"," ")
+
+d = data.frame(word = names(table(tags)), freq = as.numeric(table(tags)))
+
+set.seed(2)
+wordcloud(words = d$word, freq = d$freq, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+exp<-strsplit(about_job$experience,", ")
+kable(t(as.matrix(sort(table(unlist(exp)),decreasing=TRUE))),caption="Levels of Experience Requested")
+```
+
+## Things to do next: 
+- Just look at data from Stack Overflow from jobs related to "data"
+- **LOOK AT GLASS DOOR API?** - I'm having trouble figuring out how to use this... I can only get aggregate level data, not specific data on individual job postings
+- *start writing* - write up introduction/methods used
+- scrape data from skills section:
+    + education (Masters vs. PhD) and preferred departments of degrees
+    + years of experience
+    + unique skill requests
+    + more programming skills
+
+### Analysis Plan:
+- Look at trends in programming over time (though jobs only last about 4 weeks on Stack Overflow)
+    + consider limitation: hiring season/scraping bias
+    + undersampling/length bias - jobs in higher demand
+- PCA clustering - skills by sector
+- Are the public companies more likely to post more jobs? Private companies? Bigger companies?
+- Compare job postings from two different job boards
+
+### Limitations:
+- Reproducibility issue: data are unique to when they are scraped, and I'm obtaining data from a data dump
+    + list when data were pulled in report, save csv
+    + one option: scrape data every so often, saving csv files, take union of rows to maximize number of postings
+- Maybe not generalizable: potential bias in just looking at Stack Overflow, could attract job postings from certain types of industries
