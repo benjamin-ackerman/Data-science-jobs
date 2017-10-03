@@ -224,7 +224,7 @@ test<-geocode(newdat$LocationString,output='latlon')
 newdat$lat = jitter_latlong(test$lat,type='lat')
 newdat$lon = jitter_latlong(test$lon,type='long',newdat$lat)
 
-# Extract data on degree requirements
+### Extract data on degree requirements
 bachelors_degree <- or("[Bb]achelor","BA" %R% optional("/")%R% "BS", "B" %R% optional('.') %R% "S","B" %R% optional('.') %R% "A")
 #table(str_match(newdat$Requirements,bachelors_degree))
 #table(str_match(newdat$Description,bachelors_degree))
@@ -252,6 +252,7 @@ delete = or(exactly("\\"%R%"r"%R%"\\"%R%"n"),
             exactly(optional("/")%R%or("p","li","ul","em","br","strong","span","sup","rd","blockquote")),
             exactly(or("",":",": ")))
 
+# Function to clean requirements data
 get_requirements = function(x){
   reqs = unlist(str_split(newdat$Requirements[x],or("<",">"))) %>% 
   str_replace_all("&nbsp;","") %>%
@@ -272,12 +273,22 @@ get_requirements = function(x){
   #reqs[str_detect(reqs,or(":",": ") %R% END)]
 }
 
+#Rownumbers of jobs with requirements sections:
 req_nums = which(!is.na(newdat$Requirements))
-test<-lapply(req_nums,get_requirements)
-#sample(req_nums,10)
-test[sample(1:length(test),5)]
 
-TESTTAGS=str_match_all(unlist(test),or(unique_tags))
+#Get Requirements Sections cleaned:
+test<-lapply(req_nums,get_requirements)
+
+### Try to get skills out of the requirements, match them to the tags on the posts
+TT = function(x,i){
+  are_tags = any(str_detect(test[[x]],SPC %R% case_insensitive(unique_tags[i])%R%or(SPC,",")))
+  sum(are_tags)
+}
+
+ntags=sapply(1:length(unique_tags), 
+             function(i){
+               sum(sapply(1:length(test),function(x){TT(x,i)}))})
+moretags = data.frame(tags=unique_tags,n=ntags)
 
 # Look at years of experience
 # yrs<- or(capture(optional(DGT) %R% DGT %R% optional(SPC) %R% or("-","to") %R% optional(SPC) %R% optional(DGT) %R% DGT) ,capture(optional(DGT) %R% DGT) %R% optional(SPC) %R% optional(PLUS)) %R% optional(SPC) %R% or("[Yy]ear","[Yy]r") 
