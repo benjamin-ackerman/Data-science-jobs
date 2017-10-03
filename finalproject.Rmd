@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE,message=FALSE}
-library(devtools);library(qdapRegex);library(knitr);library(dplyr);library(kableExtra);library(ggmap);library(leaflet);library(stringr)
+library(devtools);library(qdapRegex);library(knitr);library(dplyr);library(kableExtra);library(ggmap);library(leaflet);library(stringr);library(tidyr)
 library("tm")
 library("SnowballC")
 library("wordcloud")
@@ -14,6 +14,8 @@ library("RColorBrewer")
 library('RGlassdoor')
 library(rvest)
 library(jsonlite)
+library(rebus)
+library(stringr)
 ```
 
 Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
@@ -222,6 +224,68 @@ test<-geocode(newdat$LocationString,output='latlon')
 newdat$lat = jitter_latlong(test$lat,type='lat')
 newdat$lon = jitter_latlong(test$lon,type='long',newdat$lat)
 
+# Extract data on degree requirements
+bachelors_degree <- or("[Bb]achelor","BA" %R% optional("/")%R% "BS", "B" %R% optional('.') %R% "S","B" %R% optional('.') %R% "A")
+#table(str_match(newdat$Requirements,bachelors_degree))
+#table(str_match(newdat$Description,bachelors_degree))
+
+test<-matrix(str_match(c(newdat$Requirements,newdat$Description),bachelors_degree),ncol=2,byrow = FALSE)
+rowSums(test,na.rm = TRUE)
+
+masters_degree <- or("[Mm]" %R% "aster" %R% optional("'") %R% optional("s"),"MSc")
+table(str_match(newdat$Requirements,masters_degree))
+#table(str_match(newdat$Description,masters_degree))
+
+phd_degree <- or("P" %R% optional('.') %R% "h" %R% optional('.') %R% or("D","d"),"[Dd]octorate")
+table(str_match(newdat$Requirements,phd_degree))
+#table(str_match(newdat$Description,phd_degree))
+
+newdat$Bachelors = ifelse(rowSums(cbind(as.numeric(str_detect(newdat$Requirements,bachelors_degree)),as.numeric(str_detect(newdat$Description,bachelors_degree))),na.rm = TRUE)==0, 0, 1)
+newdat$Masters = ifelse(rowSums(cbind(as.numeric(str_detect(newdat$Requirements,masters_degree)),as.numeric(str_detect(newdat$Description,masters_degree))),na.rm = TRUE)==0, 0, 1)
+newdat$PhDs = ifelse(rowSums(cbind(as.numeric(str_detect(newdat$Requirements,phd_degree)),as.numeric(str_detect(newdat$Description,phd_degree))),na.rm = TRUE)==0, 0, 1)
+
+### Regular expressions to find strong/ideal requirements, and lines in requirement decriptions to delete
+strong=or("[Ii]"%R%"deal"%R%optional("ly"),
+   "[Pp]"%R%"refer"%R%optional(or("s","red")))
+
+delete = or(exactly("\\"%R%"r"%R%"\\"%R%"n"),
+            exactly(optional("/")%R%or("p","li","ul","em","br","strong","span","sup","rd","blockquote")),
+            exactly(or("",":",": ")))
+
+get_requirements = function(x){
+  reqs = unlist(str_split(newdat$Requirements[x],or("<",">"))) %>% 
+  str_replace_all("&nbsp;","") %>%
+  str_replace_all("&ldquo;","'") %>% 
+  str_replace_all(or("&rdquo;","&rsquo;"),"'") %>% 
+  str_replace_all("&nbsp;","") %>% 
+  str_replace_all("&middot;","") %>% 
+  str_replace_all("&amp;","&") %>% 
+  str_replace_all("&bull; ","") %>%
+  str_replace_all("&ndash;","-") %>%
+  str_replace(START%R%or("- ","-"),"") %>% 
+  str_replace(START%R%optional("o")%R%" ","")
+  
+  reqs[!str_detect(reqs,delete)]
+  #reqs[-str_detect(reqs,delete)]
+  #reqs[str_detect(reqs,START%R%char_class("A-Z"))]
+  #reqs[str_detect(reqs,strong)]
+  #reqs[str_detect(reqs,or(":",": ") %R% END)]
+}
+
+req_nums = which(!is.na(newdat$Requirements))
+test<-lapply(req_nums,get_requirements)
+#sample(req_nums,10)
+test[sample(1:length(test),5)]
+
+TESTTAGS=str_match_all(unlist(test),or(unique_tags))
+
+# Look at years of experience
+# yrs<- or(capture(optional(DGT) %R% DGT %R% optional(SPC) %R% or("-","to") %R% optional(SPC) %R% optional(DGT) %R% DGT) ,capture(optional(DGT) %R% DGT) %R% optional(SPC) %R% optional(PLUS)) %R% optional(SPC) %R% or("[Yy]ear","[Yy]r") 
+# 
+# TEST<-cbind(str_match(newdat$Requirements,yrs),str_match(newdat$Description,yrs))
+# 
+# newdat$link = paste0("http://stackoverflow.com/jobs/",newdat$JobId)
+
 # Save updated dataset as "stackjobs.rds"
 saveRDS(newdat,"../stackjobs.rds")
 ```
@@ -323,6 +387,9 @@ Here is a word cloud of technical skill tags from the Stack Overflow job listing
 unique_jobs<-stackjobs %>% 
    filter(!duplicated(JobId))
 tags<-(unlist(str_split(unique_jobs$Tags," "))) %>% str_replace_all("-"," ")
+unique_tags = unique(tags)[-1]
+
+#table(tags)[order(table(tags),decreasing=TRUE)]
 
 d = data.frame(word = names(table(tags)), freq = as.numeric(table(tags)))
 
@@ -362,6 +429,38 @@ salaries <- stackjobs %>%
   arrange(SalaryMin) %>% 
   group_by(year,month) %>% 
   summarise(avgstart = mean(SalaryMin,na.rm=TRUE))
+
+jobs_per_year<-newdat %>% 
+  group_by(year) %>% 
+  count()
+
+degree_demand <- newdat %>% 
+  group_by(year) %>%  
+  summarise(Bachelor = sum(Bachelors),
+            Master = sum(Masters),
+            PhD = sum(PhDs)) %>% 
+  inner_join(jobs_per_year,by="year") %>% 
+  group_by(year) %>% 
+  summarise(Bachelor = Bachelor/n,
+            Master = Master/n,
+            PhD = PhD/n) %>% 
+  gather(key=degree,value=prop,-year)
+
+
+degree_demand <- newdat %>% 
+  filter(year >2011) %>% 
+  group_by(year,degree_latest2) %>%  
+  count() #%>% 
+  #inner_join(jobs_per_year,by='year') %>% 
+  #filter(!is.na(degree_latest2)) %>% 
+  #mutate(prop = n.x/n.y)
+#p <- ggplot(na.omit(degree_demand),aes(x=year,y=prop,group=degree_latest2,colour=degree_latest2))
+p <- ggplot(na.omit(degree_demand),aes(x=year,y=n,group=degree_latest2,colour=degree_latest2))
+p + geom_line()
+
+
+p = ggplot(degree_demand,aes(x=year,y=prop*100,group=degree,colour=degree))
+p + geom_line()
 ```
 
 
@@ -373,11 +472,9 @@ salaries <- stackjobs %>%
     + Results
     + Discussion/Limitations
 - scrape data from skills section:
-    + education (Masters vs. PhD) and preferred departments of degrees
-    + years of experience
+    + years of experience?
     + unique skill requests
     + more programming skills
-- **LOOK AT GLASS DOOR API?** - I'm having trouble figuring out how to use this... I can only get aggregate level data, not specific data on individual job postings
 
 ### Analysis Plan:
 - Look at trends in programming over time (while jobs only last about 4 weeks on Stack Overflow, I now have access to 8 years of postings...)
