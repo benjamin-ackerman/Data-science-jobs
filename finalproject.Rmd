@@ -224,26 +224,6 @@ test<-geocode(newdat$LocationString,output='latlon')
 newdat$lat = jitter_latlong(test$lat,type='lat')
 newdat$lon = jitter_latlong(test$lon,type='long',newdat$lat)
 
-### Extract data on degree requirements
-bachelors_degree <- or("[Bb]achelor","BA" %R% optional("/")%R% "BS", "B" %R% optional('.') %R% "S","B" %R% optional('.') %R% "A")
-#table(str_match(newdat$Requirements,bachelors_degree))
-#table(str_match(newdat$Description,bachelors_degree))
-
-test<-matrix(str_match(c(newdat$Requirements,newdat$Description),bachelors_degree),ncol=2,byrow = FALSE)
-rowSums(test,na.rm = TRUE)
-
-masters_degree <- or("[Mm]" %R% "aster" %R% optional("'") %R% optional("s"),"MSc")
-table(str_match(newdat$Requirements,masters_degree))
-#table(str_match(newdat$Description,masters_degree))
-
-phd_degree <- or("P" %R% optional('.') %R% "h" %R% optional('.') %R% or("D","d"),"[Dd]octorate")
-table(str_match(newdat$Requirements,phd_degree))
-#table(str_match(newdat$Description,phd_degree))
-
-newdat$Bachelors = ifelse(rowSums(cbind(as.numeric(str_detect(newdat$Requirements,bachelors_degree)),as.numeric(str_detect(newdat$Description,bachelors_degree))),na.rm = TRUE)==0, 0, 1)
-newdat$Masters = ifelse(rowSums(cbind(as.numeric(str_detect(newdat$Requirements,masters_degree)),as.numeric(str_detect(newdat$Description,masters_degree))),na.rm = TRUE)==0, 0, 1)
-newdat$PhDs = ifelse(rowSums(cbind(as.numeric(str_detect(newdat$Requirements,phd_degree)),as.numeric(str_detect(newdat$Description,phd_degree))),na.rm = TRUE)==0, 0, 1)
-
 ### Regular expressions to find strong/ideal requirements, and lines in requirement decriptions to delete
 strong=or("[Ii]"%R%"deal"%R%optional("ly"),
    "[Pp]"%R%"refer"%R%optional(or("s","red")))
@@ -263,6 +243,7 @@ get_requirements = function(x){
   str_replace_all("&amp;","&") %>% 
   str_replace_all("&bull; ","") %>%
   str_replace_all("&ndash;","-") %>%
+  str_replace_all("\\"%R%"r"%R%"\\"%R%"n","") %>% 
   str_replace(START%R%or("- ","-"),"") %>% 
   str_replace(START%R%optional("o")%R%" ","")
   
@@ -277,25 +258,81 @@ get_requirements = function(x){
 req_nums = which(!is.na(newdat$Requirements))
 
 #Get Requirements Sections cleaned:
-test<-lapply(req_nums,get_requirements)
+reqs<-lapply(req_nums,get_requirements)
 
-### Try to get skills out of the requirements, match them to the tags on the posts
-TT = function(x,i){
-  are_tags = any(str_detect(test[[x]],SPC %R% case_insensitive(unique_tags[i])%R%or(SPC,",")))
-  sum(are_tags)
+### Extract Degree Requirements from the Requirements Section:
+bachelors_degree <- or("[Bb]achelor","BA" %R% optional("/")%R% "BS", "B" %R% optional('.') %R% "S","B" %R% optional('.') %R% "A")
+no_bachelor<-or("VBA","RDMBS","Hive-BA","BAU","BART")
+
+bachelors<-lapply(reqs, function(x){x[str_detect(x,bachelors_degree) & !str_detect(x,no_bachelor)]})
+#bachelors[lapply(bachelors,length)>0]
+
+newdat$bachelors=ifelse(is.na(newdat$Requirements),NA, 
+                      ifelse(as.numeric(row.names(newdat)) %in% req_nums[lapply(bachelors,length)>0],1,0))
+
+# Indication of masters degrees:
+masters_degree <- or("[Mm]" %R% "aster" %R% optional("'") %R% "s","MSc","M"%R%optional(DOT)%R%"S"%R%optional(DOT))
+
+# get rid of these from the regular expression:
+no_masters = or("RDBMS",case_insensitive("ms")%R%optional(SPC)%R%or(case_insensitive("sql"),case_insensitive("excel"),case_insensitive("word"),case_insensitive("power"),case_insensitive("share"),case_insensitive("project"),case_insensitive("SSIS"),case_insensitive("office"),case_insensitive("access"),case_insensitive("report")),"MSAs","MSMQ","MSKCC","RDMS")
+
+masters<-lapply(reqs, function(x){x[str_detect(x,masters_degree)& !str_detect(x,no_masters)]})
+#masters[lapply(masters,length)>0]
+
+newdat$masters=ifelse(is.na(newdat$Requirements),NA, 
+                      ifelse(as.numeric(row.names(newdat)) %in% req_nums[lapply(masters,length)>0],1,0))
+
+phd_degree <- or("P" %R% optional('.') %R% "h" %R% optional('.') %R% or("D","d"),"[Dd]octorate")
+
+phds<-lapply(reqs, function(x){x[str_detect(x,phd_degree)]})
+#phds[lapply(phds,length)>0]
+
+newdat$phd=ifelse(is.na(newdat$Requirements),NA, 
+                      ifelse(as.numeric(row.names(newdat)) %in% req_nums[lapply(phds,length)>0],1,0))
+
+#table(newdat$bachelors,(newdat$masters==1 | newdat$phd == 1)) #More jobs list Masters or Phd without Bachelors
+
+
+## Find STEM majors:
+test<-readLines("http://stemdegreelist.com/stem-degree-list/")
+stem<-as.character(na.omit(unlist(rm_between(test,"<li>","</li>",extract=TRUE))))
+stem = c(stem,"applied math","CS")
+
+# stem<-unique(as.vector(str_split(stem,or(" and ","/",", "),simplify = TRUE))) %>% 
+#   str_replace_all(DGT,"") %>% 
+#   str_replace_all("&amp;","&") %>% 
+#   str_replace_all(or("\\(","\\)"),"") 
+# stem = stem[str_detect(stem,exactly(""))==FALSE]
+
+# Find all of the lines in the requirements that mention some degree requirement:
+# mentions_degree<-lapply(reqs, function(x){x[str_detect(x,phd_degree) | (str_detect(x,masters_degree)& !str_detect(x,no_masters)) | (str_detect(x,bachelors_degree) & !str_detect(x,no_bachelor))]})
+# 
+# mentions_degree<-mentions_degree[lapply(mentions_degree,length)>0]
+
+# Extract all of the requested majors based on the STEM
+majors_wanted = list()
+for(i in 1:length(reqs)){
+  majors_wanted[[i]]=unique(names(which(sapply(stem, function(x){
+    any(str_detect(reqs[[i]],"\\b"%R%case_insensitive(x)%R%"\\b"))})==TRUE)))
 }
 
-ntags=sapply(1:length(unique_tags), 
-             function(i){
-               sum(sapply(1:length(test),function(x){TT(x,i)}))})
-moretags = data.frame(tags=unique_tags,n=ntags)
+for(i in which(lapply(majors_wanted,length)>0)){
+    if(sum(sapply(mathstrings,function(x){str_detect(majors_wanted[[i]],case_insensitive(exactly(x)))}))==2){
+majors_wanted[[i]]=majors_wanted[[i]][-which(str_detect(majors_wanted[[i]],case_insensitive(exactly("Mathematics"))))]}
+}
 
-# Look at years of experience
-# yrs<- or(capture(optional(DGT) %R% DGT %R% optional(SPC) %R% or("-","to") %R% optional(SPC) %R% optional(DGT) %R% DGT) ,capture(optional(DGT) %R% DGT) %R% optional(SPC) %R% optional(PLUS)) %R% optional(SPC) %R% or("[Yy]ear","[Yy]r") 
-# 
-# TEST<-cbind(str_match(newdat$Requirements,yrs),str_match(newdat$Description,yrs))
-# 
-# newdat$link = paste0("http://stackoverflow.com/jobs/",newdat$JobId)
+majors_wanted[lapply(majors_wanted,length)>0]
+
+sort(table(unlist(majors_wanted)),decreasing=TRUE)[1:20]
+
+newdat$majors = ifelse(is.na(newdat$Requirements),NA,
+                       ifelse(as.numeric(row.names(newdat))%in%req_nums[lapply(majors_wanted,length)>0],
+                              majors_wanted[lapply(majors_wanted,length)>0], NA))
+test<-ifelse(is.na(newdat$Requirements),NA,
+                       ifelse(as.numeric(row.names(newdat))%in%req_nums[lapply(majors_wanted,length)>0],
+                              majors_wanted[lapply(majors_wanted,length)>0], NA))
+
+
 
 # Save updated dataset as "stackjobs.rds"
 saveRDS(newdat,"../stackjobs.rds")
@@ -402,7 +439,10 @@ unique_tags = unique(tags)[-1]
 
 #table(tags)[order(table(tags),decreasing=TRUE)]
 
-d = data.frame(word = names(table(tags)), freq = as.numeric(table(tags)))
+d = data.frame(word = names(table(tags)), freq = as.numeric(table(tags))) %>% 
+  arrange(desc(freq))
+
+toptags = as.character(d$word[1:20])
 
 set.seed(2)
 wordcloud(words = d$word, freq = d$freq, min.freq = 1,
