@@ -1,7 +1,7 @@
 ---
 title: "Analysis of Data Science Job Postings"
 author: "Benjamin Ackerman"
-date: "September 26, 2017"
+date: "October 3, 2017"
 output: html_document
 ---
 
@@ -294,20 +294,9 @@ newdat$phd=ifelse(is.na(newdat$Requirements),NA,
 
 
 ## Find STEM majors:
-test<-readLines("http://stemdegreelist.com/stem-degree-list/")
-stem<-as.character(na.omit(unlist(rm_between(test,"<li>","</li>",extract=TRUE))))
-stem = c(stem,"applied math","CS")
-
-# stem<-unique(as.vector(str_split(stem,or(" and ","/",", "),simplify = TRUE))) %>% 
-#   str_replace_all(DGT,"") %>% 
-#   str_replace_all("&amp;","&") %>% 
-#   str_replace_all(or("\\(","\\)"),"") 
-# stem = stem[str_detect(stem,exactly(""))==FALSE]
-
-# Find all of the lines in the requirements that mention some degree requirement:
-# mentions_degree<-lapply(reqs, function(x){x[str_detect(x,phd_degree) | (str_detect(x,masters_degree)& !str_detect(x,no_masters)) | (str_detect(x,bachelors_degree) & !str_detect(x,no_bachelor))]})
-# 
-# mentions_degree<-mentions_degree[lapply(mentions_degree,length)>0]
+stem_degrees<-readLines("http://stemdegreelist.com/stem-degree-list/")
+stem<-as.character(na.omit(unlist(rm_between(stem_degrees,"<li>","</li>",extract=TRUE))))
+stem = c(stem,"applied math","CS","operation research","Computational Physics")
 
 # Extract all of the requested majors based on the STEM
 majors_wanted = list()
@@ -316,23 +305,19 @@ for(i in 1:length(reqs)){
     any(str_detect(reqs[[i]],"\\b"%R%case_insensitive(x)%R%"\\b"))})==TRUE)))
 }
 
+# If "Applied Mathematics" is listed, get rid of "Mathematics" from the list
 for(i in which(lapply(majors_wanted,length)>0)){
     if(sum(sapply(mathstrings,function(x){str_detect(majors_wanted[[i]],case_insensitive(exactly(x)))}))==2){
-majors_wanted[[i]]=majors_wanted[[i]][-which(str_detect(majors_wanted[[i]],case_insensitive(exactly("Mathematics"))))]}
-}
+majors_wanted[[i]]=majors_wanted[[i]][-which(str_detect(majors_wanted[[i]],case_insensitive(exactly("Mathematics"))))]}}
 
-majors_wanted[lapply(majors_wanted,length)>0]
+# Clean up "CS","applied math" and "operation research"
+majors_wanted = lapply(majors_wanted,function(x){str_replace_all(x,"CS","Computer Science")})
+majors_wanted = lapply(majors_wanted,function(x){str_replace_all(x,"applied math","Applied Mathematics")})
+majors_wanted = lapply(majors_wanted,function(x){str_replace_all(x,"operation research","Operations Research")})
 
-sort(table(unlist(majors_wanted)),decreasing=TRUE)[1:20]
-
-newdat$majors = ifelse(is.na(newdat$Requirements),NA,
-                       ifelse(as.numeric(row.names(newdat))%in%req_nums[lapply(majors_wanted,length)>0],
-                              majors_wanted[lapply(majors_wanted,length)>0], NA))
-test<-ifelse(is.na(newdat$Requirements),NA,
-                       ifelse(as.numeric(row.names(newdat))%in%req_nums[lapply(majors_wanted,length)>0],
-                              majors_wanted[lapply(majors_wanted,length)>0], NA))
-
-
+newdat$majors = NA
+newdat$majors[req_nums] = majors_wanted
+newdat$majors[which(lapply(newdat$majors,length)==0)]=NA
 
 # Save updated dataset as "stackjobs.rds"
 saveRDS(newdat,"../stackjobs.rds")
@@ -481,37 +466,29 @@ salaries <- stackjobs %>%
   group_by(year,month) %>% 
   summarise(avgstart = mean(SalaryMin,na.rm=TRUE))
 
-jobs_per_year<-newdat %>% 
+jobs_per_year<-stackjobs %>% 
   group_by(year) %>% 
   count()
 
-degree_demand <- newdat %>% 
+degree_demand <- stackjobs %>% 
   group_by(year) %>%  
-  summarise(Bachelor = sum(Bachelors),
-            Master = sum(Masters),
-            PhD = sum(PhDs)) %>% 
-  inner_join(jobs_per_year,by="year") %>% 
-  group_by(year) %>% 
-  summarise(Bachelor = Bachelor/n,
-            Master = Master/n,
-            PhD = PhD/n) %>% 
-  gather(key=degree,value=prop,-year)
+  summarise(Bachelor = sum(bachelors,na.rm=TRUE),
+            Master = sum(masters,na.rm=TRUE),
+            PhD = sum(phd,na.rm=TRUE)) %>% 
+  # inner_join(jobs_per_year,by="year") %>% 
+  # group_by(year) %>% 
+  # summarise(Bachelor = Bachelor/n,
+  #           Master = Master/n,
+  #           PhD = PhD/n) %>% 
+   gather(key=degree,value=n,-year)
 
-
-degree_demand <- newdat %>% 
-  filter(year >2011) %>% 
-  group_by(year,degree_latest2) %>%  
-  count() #%>% 
-  #inner_join(jobs_per_year,by='year') %>% 
-  #filter(!is.na(degree_latest2)) %>% 
-  #mutate(prop = n.x/n.y)
 #p <- ggplot(na.omit(degree_demand),aes(x=year,y=prop,group=degree_latest2,colour=degree_latest2))
-p <- ggplot(na.omit(degree_demand),aes(x=year,y=n,group=degree_latest2,colour=degree_latest2))
+p <- ggplot(na.omit(degree_demand),aes(x=year,y=n,group=degree,colour=degree))
 p + geom_line()
 
-
-p = ggplot(degree_demand,aes(x=year,y=prop*100,group=degree,colour=degree))
-p + geom_line()
+pop_majors = data.frame(sort(table(unlist(stackjobs$majors)),decreasing=TRUE)[1:10])
+names(pop_majors) = c("Major","n")
+kable(pop_majors,caption="10 most common majors listed in job postings")
 ```
 
 
@@ -523,7 +500,7 @@ p + geom_line()
     + Results
     + Discussion/Limitations
 - scrape data from skills section:
-    + years of experience?
+    + **Get Degree Program info from Descriptions**
     + unique skill requests
     + more programming skills
 

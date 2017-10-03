@@ -22,3 +22,5 @@ xml2
 rvest
 jsonlite
 stringr
+tidyr
+rebus
