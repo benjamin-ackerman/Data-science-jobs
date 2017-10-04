@@ -1,7 +1,7 @@
 ---
 title: "Trends in Data Science Job Postings on Stack Overflow"
 author: "Benjamin Ackerman"
-date: "October 3, 2017"
+date: "October 4, 2017"
 mainfont: Times New Roman
 output: 
   pdf_document:
@@ -63,7 +63,7 @@ jitter_latlong <- Vectorize(jitter_latlong,
 ```
 
 
-```{r plot jobs, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
+```{r plot jobs, eval=FALSE,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
 mapdat = stackjobs %>% 
   group_by(LocationString) %>% 
   count() %>% 
@@ -80,6 +80,82 @@ ggplot()+
                axis.title.y = element_blank(),
                axis.text.y=element_blank(),
                axis.ticks.y=element_blank())
+
+ggplot()+
+  borders(database="world",xlim=range(stackjobs$lon,na.rm=TRUE),ylim=range(stackjobs$lat,na.rm=TRUE))+coord_map(projection="mercator")+
+geom_density2d(data = mapdat, aes(x = lon, y = lat), size = 0.3) +
+stat_density2d(data =mapdat,
+                 aes(x = lon, y = lat, fill = ..level.., alpha = ..level..), size = 0.01,
+                 bins = 30, geom = "polygon") + scale_fill_gradient(low = "green", high = "red") +
+  scale_alpha(range = c(0, 0.3), guide = FALSE)
+
+ggplot()+geom_hex(data=mapdat, mapping=aes(x=lon,y=lat), bins=30,alpha=.5)+borders(database="world",xlim=range(stackjobs$lon,na.rm=TRUE),ylim=range(stackjobs$lat,na.rm=TRUE))
+
+mapdat1 = stackjobs %>% 
+  group_by(LocationString) %>% 
+  count() %>% 
+  inner_join(stackjobs,by="LocationString") %>% 
+  filter(CountryCode == "US")
+
+
+ggplot()+borders(database="state")+coord_map(projection="mercator")+
+  geom_density2d(data = mapdat1, aes(x = lon, y = lat), size = 0.3) +
+stat_density2d(data =mapdat1,
+                 aes(x = lon, y = lat, fill = ..level.., alpha = ..level..), size = 0.01,
+                 bins = 30, geom = "polygon") + scale_fill_gradient(low = "green", high = "red") +
+   theme(legend.position="none",
+              axis.title.x = element_blank(),
+               axis.line = element_blank(),
+               axis.text.x=element_blank(),
+               axis.ticks.x=element_blank(),
+               axis.title.y = element_blank(),
+               axis.text.y=element_blank(),
+               axis.ticks.y=element_blank())
+
+
+ggplot()+borders(database="state")+geom_hex(data=mapdat1, mapping=aes(x=lon,y=lat), bins=15,alpha=.5)+theme(
+              axis.title.x = element_blank(),
+               axis.line = element_blank(),
+               axis.text.x=element_blank(),
+               axis.ticks.x=element_blank(),
+               axis.title.y = element_blank(),
+               axis.text.y=element_blank(),
+               axis.ticks.y=element_blank())
+```
+
+```{r actual map,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=4,fig.width=8.5}
+mapdat1 = stackjobs %>% 
+  group_by(LocationString) %>% 
+  count() %>% 
+  inner_join(stackjobs,by="LocationString") %>% 
+  filter(CountryCode == "US")
+
+us=ggplot()+borders(database="state")+geom_hex(data=mapdat1, mapping=aes(x=lon,y=lat), bins=12,alpha=.8)+scale_fill_gradient(low = "yellow", high = "red")+theme(
+              legend.position="none",
+              axis.title.x = element_blank(),
+               axis.line = element_blank(),
+               axis.text.x=element_blank(),
+               axis.ticks.x=element_blank(),
+               axis.title.y = element_blank(),
+               axis.text.y=element_blank(),
+               axis.ticks.y=element_blank())
+
+mapdat2 = stackjobs %>% 
+  group_by(LocationString) %>% 
+  count() %>% 
+  inner_join(stackjobs,by="LocationString") %>%
+  filter(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB"))
+
+europe=ggplot()+borders(database="world",xlim=c(-10,25),ylim=c(40,70))+geom_hex(data=mapdat2, mapping=aes(x=lon,y=lat), bins=12,alpha=.8)+scale_fill_gradient(low = "yellow", high = "red")+theme(
+              axis.title.x = element_blank(),
+               axis.line = element_blank(),
+               axis.text.x=element_blank(),
+               axis.ticks.x=element_blank(),
+               axis.title.y = element_blank(),
+               axis.text.y=element_blank(),
+               axis.ticks.y=element_blank())
+
+cowplot::plot_grid(us,europe, labels = c("USA", "Europe"), align = "v")
 ```
 
 
