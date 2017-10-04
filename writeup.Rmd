@@ -62,14 +62,15 @@ jitter_latlong <- Vectorize(jitter_latlong,
                             vectorize.args = c("coord", "latitude"))
 ```
 
-```{r actual map,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=4,fig.width=8.5}
+```{r actual map,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=4,fig.width=10}
 mapdat1 = stackjobs %>% 
   group_by(LocationString) %>% 
   count() %>% 
   inner_join(stackjobs,by="LocationString") %>% 
-  filter(CountryCode == "US")
+  filter(CountryCode == "US") %>% 
+  mutate(region = "USA")
 
-us=ggplot()+borders(database="state")+geom_hex(data=mapdat1, mapping=aes(x=lon,y=lat), bins=12,alpha=.8)+scale_fill_gradient(low = "yellow", high = "red")+theme(
+us=ggplot()+borders(database="state")+geom_hex(data=mapdat1, mapping=aes(x=lon,y=lat), bins=15,alpha=.8)+scale_fill_gradient(low = "yellow", high = "red")+theme(
               legend.position="none",
               axis.title.x = element_blank(),
                axis.line = element_blank(),
@@ -83,20 +84,26 @@ mapdat2 = stackjobs %>%
   group_by(LocationString) %>% 
   count() %>% 
   inner_join(stackjobs,by="LocationString") %>%
-  filter(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB"))
+  filter(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB")) %>% 
+  mutate(region = "EU")
 
-europe=ggplot()+borders(database="world",xlim=c(-10,25),ylim=c(40,70))+geom_hex(data=mapdat2, mapping=aes(x=lon,y=lat), bins=12,alpha=.8)+scale_fill_gradient(low = "yellow", high = "red")+theme(
-              axis.title.x = element_blank(),
+europe=ggplot()+borders(database="world",xlim=c(-10,25),ylim=c(40,70))+geom_hex(data=mapdat2, mapping=aes(x=lon,y=lat), bins=15,alpha=.8)+scale_fill_gradient("# of Jobs",low = "yellow", high = "red")+theme(
+               axis.title.x = element_blank(),
                axis.line = element_blank(),
                axis.text.x=element_blank(),
                axis.ticks.x=element_blank(),
                axis.title.y = element_blank(),
                axis.text.y=element_blank(),
-               axis.ticks.y=element_blank())
+               axis.ticks.y=element_blank(),
+               legend.title=element_text(size=10),
+               legend.text=element_text(size=10))
 
-cowplot::plot_grid(us,europe, labels = c("USA", "Europe"), align = "v")
+cowplot::plot_grid(us,europe, labels = c(paste0("USA (n=",nrow(mapdat1),")"), paste0("Europe (n=",nrow(mapdat2),")")), align = "v")
 ```
 
+```{r,echo=FALSE }
+commparison_data = rbind(mapdat1,mapdat2)
+```
 
 ## Discussion/Limitations
 
