@@ -6,16 +6,7 @@ output: html_document
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE,message=FALSE}
-library(devtools);library(qdapRegex);library(knitr);library(dplyr);library(kableExtra);library(ggmap);library(leaflet);library(stringr);library(tidyr)
-library("tm")
-library("SnowballC")
-library("wordcloud")
-library("RColorBrewer")
-library('RGlassdoor')
-library(rvest)
-library(jsonlite)
-library(rebus)
-library(stringr)
+packages = c("devtools","qdapRegex","knitr","dplyr","kableExtra","ggmap","leaflet","stringr","tidyr","tm","SnowballC","wordcloud","RColorBrewer","rebus")
 ```
 
 Perform an analysis of "data scientist" jobs listed on job boards and on the employment pages of major companies. What are the most common skills that employers look for? What are the most unique skills that employers look for? Where are the types of companies that employ the most data scientists?
@@ -219,10 +210,11 @@ repeat_locations<-sapply(1:length(repeats),function(x){
 newdat$LocationString[which(newdat$JobId %in% repeats)] = unlist(repeat_locations)
 
 # Geocode locations to plot them
-test<-geocode(newdat$LocationString,output='latlon')
+latlon<-geocode(newdat$LocationString,output='latlon')
+newdat = cbind(newdat,latlon)
 
-newdat$lat = jitter_latlong(test$lat,type='lat')
-newdat$lon = jitter_latlong(test$lon,type='long',newdat$lat)
+#newdat$lat = jitter_latlong(latlon$lat,type='lat')
+#newdat$lon = jitter_latlong(latlon$lon,type='long',newdat$lat)
 
 ### Regular expressions to find strong/ideal requirements, and lines in requirement decriptions to delete
 strong=or("[Ii]"%R%"deal"%R%optional("ly"),

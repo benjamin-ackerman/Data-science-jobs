@@ -1,0 +1,86 @@
+---
+title: "Trends in Data Science Job Postings on Stack Overflow"
+author: "Benjamin Ackerman"
+date: "October 3, 2017"
+mainfont: Times New Roman
+output: 
+  pdf_document:
+    latex_engine: xelatex
+fontsize: 12pt
+geometry: margin=1in
+---
+
+```{r setup, echo=FALSE, warning=FALSE,message=FALSE,results='hide'}
+packages = c("devtools","qdapRegex","knitr","dplyr","kableExtra","ggmap","leaflet","stringr","tidyr","tm","SnowballC","wordcloud","RColorBrewer","rebus","grid")
+lapply(packages,library,character.only=TRUE)
+```
+
+## Introduction
+- Increased demand for data scientists, hot new field, Stack Overflow's popularity
+
+## Research Aim
+The purpose of this paper is to examine trends in job postings for "data scientists" on the Stack Overflow job board.  This involves determing the most common computing skills that employers look for, where geographically most jobs are located, degree and area of study preferences among employers, and how these have changed over time.
+
+## Data
+Data were made privately available upon request from David Robinson, a Data Scientist at Stack Overflow.  The provided data consist of information from jobs posted on the Stack Overflow job board that either have "data scientist" or "data analyst" in their title, and were posted between August 25, 2010 and September 25, 2017.  While company names were censored from the data, the following attributes of each posting were provided in a data frame: job title, original posting date, associated tags indicating relevant skills, job location (City, State, Country), salary (when included), and the full text of job descriptions and requirements.
+
+- Extracted the following for each posting in the data provided:
+    + Month and year when the job was posted
+    + Degree requirement for the job (Bachelors, Masters, PhD)
+    + Preferred majors/departments for the job
+    + Latitude and longitude of the job location using the `geocode` function in the `ggmap` package
+    
+## Methods
+- Latitude and longitude were jittered using code from [**this repository**](https://github.com/lmullen/mullenMisc/blob/master/R/jitter-latlong.R)
+
+## Results
+```{r load data,echo=FALSE}
+stackjobs = readRDS("../stackjobs.rds")
+```
+
+```{r jitter latitude and longitude functions,echo=FALSE}
+length_of_degree <- function(degree, type = c("lat", "long")) {
+  type <- match.arg(type)
+  length_at_equator <- 110.5742727 # in kilometers
+  if (type == "long") {
+    cos(degree * (2 * pi) / 360) * length_at_equator
+  } else if (type == "lat") {
+    length_at_equator
+  }
+}
+jitter_latlong <- function(coord, type = c("lat", "long"), latitude, km = 1) {
+  type = match.arg(type)
+  if(missing(latitude) & type == "lat") latitude <- coord
+  km_per_degree <- length_of_degree(latitude, type = type)
+  degree_per_km <- 1 / km_per_degree
+  coord + (runif(1, min = -1, max = 1) * degree_per_km * km)
+}
+jitter_latlong <- Vectorize(jitter_latlong,
+                            vectorize.args = c("coord", "latitude"))
+```
+
+
+```{r plot jobs, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center'}
+mapdat = stackjobs %>% 
+  group_by(LocationString) %>% 
+  count() %>% 
+  inner_join(stackjobs,by="LocationString")
+
+#map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
+map1 <- get_map(location = c(lon = -95, lat = 35),zoom=4,maptype='terrain')
+
+ggmap(map1) + scale_y_continuous(limits=c(20,50)) + geom_point(aes(x = lon, y = lat,size=n),colour="red",alpha=.1, data = mapdat)+theme(legend.position="none")
+
+mapdat$LocationString[which.min(mapdat$lat)]
+# library(RgoogleMaps)
+  # map=GetMap(zoom=2)
+  # PlotOnStaticMap(map)
+  
+# world <- map_data("world")
+# ggplot(world)+geom_point(aes(x = lon, y = lat,size=n),colour="red",alpha=.2, data = mapdat)+theme(legend.position="none")
+```
+
+
+## Discussion/Limitations
+
+## Conclusion
