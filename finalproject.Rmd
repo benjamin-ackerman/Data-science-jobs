@@ -232,7 +232,7 @@ delete = or(exactly("\\"%R%"r"%R%"\\"%R%"n"),
             exactly(optional("/")%R%or("p","li","ul","em","br","strong","span","sup","rd","blockquote")),
             exactly(or("",":",": ")))
 
-# Function to clean requirements data
+# Functions to clean requirements data
 get_requirements = function(x){
   reqs = unlist(str_split(newdat$Requirements[x],or("<",">"))) %>% 
   str_replace_all("&nbsp;","") %>%
@@ -242,6 +242,7 @@ get_requirements = function(x){
   str_replace_all("&middot;","") %>% 
   str_replace_all("&amp;","&") %>% 
   str_replace_all("&bull; ","") %>%
+  str_replace_all("\n ","") %>%
   str_replace_all("&ndash;","-") %>%
   str_replace_all("\\"%R%"r"%R%"\\"%R%"n","") %>% 
   str_replace(START%R%or("- ","-"),"") %>% 
@@ -254,69 +255,111 @@ get_requirements = function(x){
   #reqs[str_detect(reqs,or(":",": ") %R% END)]
 }
 
-#Rownumbers of jobs with requirements sections:
+get_description = function(x){
+  description = unlist(str_split(newdat$Description[x],or("<",">"))) %>% 
+    str_replace_all("&nbsp;","") %>%
+    str_replace_all("&ldquo;","'") %>% 
+    str_replace_all(or("&rdquo;","&rsquo;"),"'") %>% 
+    str_replace_all("&nbsp;","") %>% 
+    str_replace_all("&middot;","") %>% 
+    str_replace_all("&amp;","&") %>% 
+    str_replace_all("&bull; ","") %>%
+    str_replace_all("\n ","") %>%
+    str_replace_all("&ndash;","-") %>%
+    str_replace_all("\\"%R%"r"%R%"\\"%R%"n","") %>% 
+    str_replace(START%R%or("- ","-"),"") %>% 
+    str_replace(START%R%optional("o")%R%" ","")
+  
+  description[!str_detect(description,delete)]
+}
+
+#Row numbers of jobs with requirements and description sections:
 req_nums = which(!is.na(newdat$Requirements))
+desc_nums = which(!is.na(newdat$Description))
+desc_nums = desc_nums[-req_nums]
 
-#Get Requirements Sections cleaned:
+# Get Requirements Sections cleaned:
 reqs<-lapply(req_nums,get_requirements)
+# Get Descriptions Section cleaned, and *only* look at descriptions where requirements are missing:
+desc<-lapply(desc_nums,get_description)
 
-### Extract Degree Requirements from the Requirements Section:
+# Regular expression to find Bachelors degrees:
 bachelors_degree <- or("[Bb]achelor","BA" %R% optional("/")%R% "BS", "B" %R% optional('.') %R% "S","B" %R% optional('.') %R% "A")
+# Do not include these though!
 no_bachelor<-or("VBA","RDMBS","Hive-BA","BAU","BART")
 
-bachelors<-lapply(reqs, function(x){x[str_detect(x,bachelors_degree) & !str_detect(x,no_bachelor)]})
-#bachelors[lapply(bachelors,length)>0]
+# Extract lines from the requirements and descriptions that mention Bachelors degrees:
+bachelors_req<-lapply(reqs, function(x){x[str_detect(x,bachelors_degree) & !str_detect(x,no_bachelor)]})
+bachelors_desc<-lapply(desc, function(x){x[str_detect(x,bachelors_degree) & !str_detect(x,no_bachelor)]})
 
-newdat$bachelors=ifelse(is.na(newdat$Requirements),NA, 
-                      ifelse(as.numeric(row.names(newdat)) %in% req_nums[lapply(bachelors,length)>0],1,0))
+newdat$bachelors = 0
+newdat$bachelors[c(req_nums[lapply(bachelors_req,length)>0],desc_nums[lapply(bachelors_desc,length)>0])
+] = 1
 
-# Indication of masters degrees:
-masters_degree <- or("[Mm]" %R% "aster" %R% optional("'") %R% "s","MSc","M"%R%optional(DOT)%R%"S"%R%optional(DOT))
-
-# get rid of these from the regular expression:
+# Regular expression to find Masters degrees:
+masters_degree <- or("[Mm]" %R% "aster" %R% optional("'") %R% "s","MSc","M"%R%optional(DOT)%R%optional(SPC)%R%"S"%R%optional(DOT))
+# Do not include these though!
 no_masters = or("RDBMS",case_insensitive("ms")%R%optional(SPC)%R%or(case_insensitive("sql"),case_insensitive("excel"),case_insensitive("word"),case_insensitive("power"),case_insensitive("share"),case_insensitive("project"),case_insensitive("SSIS"),case_insensitive("office"),case_insensitive("access"),case_insensitive("report")),"MSAs","MSMQ","MSKCC","RDMS")
 
-masters<-lapply(reqs, function(x){x[str_detect(x,masters_degree)& !str_detect(x,no_masters)]})
-#masters[lapply(masters,length)>0]
+# Extract lines from the requirements and descriptions that mention Bachelors degrees:
+masters_req<-lapply(reqs, function(x){x[str_detect(x,masters_degree) & !str_detect(x,no_masters)]})
+masters_desc<-lapply(desc, function(x){x[str_detect(x,masters_degree) & !str_detect(x,no_masters)]})
 
-newdat$masters=ifelse(is.na(newdat$Requirements),NA, 
-                      ifelse(as.numeric(row.names(newdat)) %in% req_nums[lapply(masters,length)>0],1,0))
+newdat$masters = 0
+newdat$masters[c(req_nums[lapply(masters_req,length)>0],desc_nums[lapply(masters_desc,length)>0])
+] = 1
 
-phd_degree <- or("P" %R% optional('.') %R% "h" %R% optional('.') %R% or("D","d"),"[Dd]octorate")
+# Regular expression to find PhD degrees:
+phd_degree <- or("P" %R% optional(DOT) %R% "h" %R% optional(DOT) %R%optional(SPC)%R% or("D","d"),"[Dd]octorate")
 
-phds<-lapply(reqs, function(x){x[str_detect(x,phd_degree)]})
-#phds[lapply(phds,length)>0]
+# Extract lines from the requirements and descriptions that mention Bachelors degrees:
+phds_req<-lapply(reqs, function(x){x[str_detect(x,phd_degree)]})
+phds_desc<-lapply(desc, function(x){x[str_detect(x,phd_degree)]})
 
-newdat$phd=ifelse(is.na(newdat$Requirements),NA, 
-                      ifelse(as.numeric(row.names(newdat)) %in% req_nums[lapply(phds,length)>0],1,0))
+newdat$phd = 0
+newdat$phd[c(req_nums[lapply(phds_req,length)>0],desc_nums[lapply(phds_desc,length)>0])
+] = 1
 
-#table(newdat$bachelors,(newdat$masters==1 | newdat$phd == 1)) #More jobs list Masters or Phd without Bachelors
-
+# Create a variable that indicates the highest degree listed in the job listing:
+newdat$highest_degree = ifelse(newdat$phd == 1, "phd",ifelse(newdat$masters==1, "masters",ifelse(newdat$bachelors==1, "bachelors",NA)))
 
 ## Find STEM majors:
 stem_degrees<-readLines("http://stemdegreelist.com/stem-degree-list/")
 stem<-as.character(na.omit(unlist(rm_between(stem_degrees,"<li>","</li>",extract=TRUE))))
-stem = c(stem,"applied math","CS","operation research","Computational Physics")
+stem = c(stem,"applied math","CS","operation research","Computational Physics","Biostatistics")
 
 # Extract all of the requested majors based on the STEM
-majors_wanted = list()
+majors_wanted_req = majors_wanted_desc = list()
 for(i in 1:length(reqs)){
-  majors_wanted[[i]]=unique(names(which(sapply(stem, function(x){
+  majors_wanted_req[[i]]=unique(names(which(sapply(stem, function(x){
     any(str_detect(reqs[[i]],"\\b"%R%case_insensitive(x)%R%"\\b"))})==TRUE)))
+}
+for(i in 1:length(desc)){
+  majors_wanted_desc[[i]]=unique(names(which(sapply(stem, function(x){
+    any(str_detect(desc[[i]],"\\b"%R%case_insensitive(x)%R%"\\b"))})==TRUE)))
 }
 
 # If "Applied Mathematics" is listed, get rid of "Mathematics" from the list
-for(i in which(lapply(majors_wanted,length)>0)){
-    if(sum(sapply(mathstrings,function(x){str_detect(majors_wanted[[i]],case_insensitive(exactly(x)))}))==2){
-majors_wanted[[i]]=majors_wanted[[i]][-which(str_detect(majors_wanted[[i]],case_insensitive(exactly("Mathematics"))))]}}
+for(i in which(lapply(majors_wanted_req,length)>0)){
+    if(sum(sapply(mathstrings,function(x){str_detect(majors_wanted_req[[i]],case_insensitive(exactly(x)))}))==2){
+majors_wanted_req[[i]]=majors_wanted_req[[i]][-which(str_detect(majors_wanted_req[[i]],case_insensitive(exactly("Mathematics"))))]}}
+
+for(i in which(lapply(majors_wanted_desc,length)>0)){
+    if(sum(sapply(mathstrings,function(x){str_detect(majors_wanted_desc[[i]],case_insensitive(exactly(x)))}))==2){
+majors_wanted_desc[[i]]=majors_wanted_desc[[i]][-which(str_detect(majors_wanted_desc[[i]],case_insensitive(exactly("Mathematics"))))]}}
 
 # Clean up "CS","applied math" and "operation research"
-majors_wanted = lapply(majors_wanted,function(x){str_replace_all(x,"CS","Computer Science")})
-majors_wanted = lapply(majors_wanted,function(x){str_replace_all(x,"applied math","Applied Mathematics")})
-majors_wanted = lapply(majors_wanted,function(x){str_replace_all(x,"operation research","Operations Research")})
+majors_wanted_req = lapply(majors_wanted_req,function(x){str_replace_all(x,"CS","Computer Science")})
+majors_wanted_req = lapply(majors_wanted_req,function(x){str_replace_all(x,"applied math","Applied Mathematics")})
+majors_wanted_req = lapply(majors_wanted_req,function(x){str_replace_all(x,"operation research","Operations Research")})
+
+majors_wanted_desc = lapply(majors_wanted_desc,function(x){str_replace_all(x,"CS","Computer Science")})
+majors_wanted_desc = lapply(majors_wanted_desc,function(x){str_replace_all(x,"applied math","Applied Mathematics")})
+majors_wanted_desc = lapply(majors_wanted_desc,function(x){str_replace_all(x,"operation research","Operations Research")})
 
 newdat$majors = NA
-newdat$majors[req_nums] = majors_wanted
+newdat$majors[req_nums] = majors_wanted_req
+newdat$majors[desc_nums] = majors_wanted_desc
 newdat$majors[which(lapply(newdat$majors,length)==0)]=NA
 
 # Save updated dataset as "stackjobs.rds"
@@ -437,13 +480,14 @@ wordcloud(words = d$word, freq = d$freq, min.freq = 1,
 
 ## More EDA:
 ```{r eda plots, echo=FALSE,eval=TRUE, fig.align='center', fig.height=8,fig.width=10,results='asis'}
-exp<-strsplit(about_job$experience,", ")
-kable(t(as.matrix(sort(table(unlist(exp)),decreasing=TRUE))),caption="Levels of Experience Requested")
+# exp<-strsplit(about_job$experience,", ")
+# kable(t(as.matrix(sort(table(unlist(exp)),decreasing=TRUE))),caption="Levels of Experience Requested")
 
 time_trend<-stackjobs %>% 
   group_by(month,year) %>% 
   count() %>% 
-  arrange(year,month) 
+  arrange(year,month) %>% 
+  mutate(month_yr = str_c(month,year,sep="-"))
 
 plot(1:nrow(time_trend),time_trend$n,type='l',xaxt='n',xlab=" ",ylab="Number of Jobs Per Month")
 axis(1,at=1:nrow(time_trend),labels=paste0(time_trend$month,"-",time_trend$year),las=2,cex.axis=.6)
@@ -475,20 +519,26 @@ degree_demand <- stackjobs %>%
   summarise(Bachelor = sum(bachelors,na.rm=TRUE),
             Master = sum(masters,na.rm=TRUE),
             PhD = sum(phd,na.rm=TRUE)) %>% 
-  # inner_join(jobs_per_year,by="year") %>% 
-  # group_by(year) %>% 
-  # summarise(Bachelor = Bachelor/n,
+   #inner_join(jobs_per_year,by="year") %>% 
+   #group_by(year) %>% 
+   #summarise(Bachelor = Bachelor/n,
   #           Master = Master/n,
   #           PhD = PhD/n) %>% 
    gather(key=degree,value=n,-year)
 
-#p <- ggplot(na.omit(degree_demand),aes(x=year,y=prop,group=degree_latest2,colour=degree_latest2))
 p <- ggplot(na.omit(degree_demand),aes(x=year,y=n,group=degree,colour=degree))
-p + geom_line()
+p + geom_line() + labs(title="Trends in Degrees Listed in Posting by Year")
 
-pop_majors = data.frame(sort(table(unlist(stackjobs$majors)),decreasing=TRUE)[1:10])
+highest_degree_yr<-stackjobs %>% 
+  group_by(year,highest_degree) %>% 
+  count()
+
+p <- ggplot(na.omit(highest_degree_yr),aes(x=year,y=n,group=highest_degree,colour=highest_degree))
+p + geom_line() + labs(title="Trends in Highest Degree Listed in Posting by Year")
+
+pop_majors = data.frame(sort(table(unlist(stackjobs$majors)),decreasing=TRUE))
 names(pop_majors) = c("Major","n")
-kable(pop_majors,caption="10 most common majors listed in job postings")
+kable(pop_majors[1:10,],caption="10 most common majors listed in job postings")
 ```
 
 
