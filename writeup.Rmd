@@ -13,9 +13,11 @@ geometry: margin=1in
 ```{r setup, echo=FALSE, warning=FALSE,message=FALSE,results='hide'}
 packages = c("devtools","qdapRegex","knitr","dplyr","kableExtra","ggmap","leaflet","stringr","tidyr","tm","SnowballC","wordcloud","RColorBrewer","rebus","maps","grid","cowplot","RgoogleMaps","ggplot2")
 lapply(packages,library,character.only=TRUE)
-
 ```
 
+```{r test setup, include=FALSE}
+opts_chunk$set(dev = 'pdf')
+```
 ## Introduction
 - Increased demand for data scientists, hot new field, Stack Overflow's popularity
 
@@ -61,42 +63,16 @@ jitter_latlong <- Vectorize(jitter_latlong,
 ```
 
 
-```{r plot jobs, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center'}
+```{r plot jobs, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
 mapdat = stackjobs %>% 
   group_by(LocationString) %>% 
   count() %>% 
   inner_join(stackjobs,by="LocationString")
-
-#map <- get_map(location = 'United States',zoom=4,maptype='roadmap')
-# map1 <- get_map(location = c(lon = -65, lat = 0),zoom=2,maptype='terrain')
-# ggmap(map1) + scale_x_continuous(limits=c(-130,-50)) + scale_y_continuous(limits=c(-45,65))+ geom_point(aes(x = lon, y = lat,size=n),colour="red",alpha=.1, data = mapdat)+theme(legend.position="none",
-#               axis.title.x = element_blank(),
-#               axis.line = element_blank(),
-#               axis.text.x=element_blank(),
-#               axis.ticks.x=element_blank(),
-#               axis.title.y = element_blank(),
-#               axis.text.y=element_blank(),
-#               axis.ticks.y=element_blank())
-# 
-# cowplot::plot_grid(A, B, labels = c("A", "B"), align = "v")
-# map2 <- get_map(location = c(lon = 70, lat = 20),zoom=2,maptype='terrain')
-# 
-# b = ggmap(map2) + scale_y_continuous(limits=c(-45,61)) + geom_point(aes(x = lon, y = lat,size=n),colour="red",alpha=.1, data = mapdat)+theme(legend.position="none",
-#               axis.title.x = element_blank(),
-#               axis.line = element_blank(),
-#               axis.text.x=element_blank(),
-#               axis.ticks.x=element_blank(),
-#               axis.title.y = element_blank(),
-#               axis.text.y=element_blank(),
-#               axis.ticks.y=element_blank())
-
-# map=GetMap(zoom=1,center=c(lat=0,lon=0),maptype="roadmap")
-
-# map=GetMap.bbox(center=c(lat=0,lon=0),lonR = c(min(stackjobs$lon),max(stackjobs$lon)),latR = c(min(stackjobs$lat),max(stackjobs$lat)))
-# ?GetMap.bbox
-# PlotOnStaticMap(map,lat = stackjobs$lat,lon = stackjobs$lon,cex=.5,pch=19,col=rgb(1,0,0,.3))
-
-ggplot()+borders(database="world",xlim=range(mapdat2$lon,na.rm=TRUE),ylim=range(mapdat2$lat,na.rm=TRUE))+coord_map(projection="mercator")+geom_point(aes(x = lon, y = lat,size=n),colour="red",alpha=.2, data = mapdat2)+theme(legend.position="none",
+world
+ggplot()+
+  borders(database="world",xlim=range(stackjobs$lon,na.rm=TRUE),ylim=range(stackjobs$lat,na.rm=TRUE))+coord_map(projection="mercator")+
+  geom_point(aes(x = lon, y = lat,size=n,colour=CountryCode),alpha=.2, data = mapdat)+
+  theme(legend.position="none",
               axis.title.x = element_blank(),
                axis.line = element_blank(),
                axis.text.x=element_blank(),
