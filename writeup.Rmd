@@ -243,6 +243,8 @@ names(pop_majors) = c("Major","n")
 kable(pop_majors[1:10,],caption="10 most common majors listed in job postings")
 ```
 
+### Most Popular Attributes of Job Listings from 2010-2017:
+
 ```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
 toptags = stackjobs %>% 
   ungroup() %>% 
@@ -380,12 +382,85 @@ colnames(diff_tab) = c("USA","Europe","P-value")
 row.names(diff_tab) = c("Visa Sponsorship","Allows Remote Work", "Offers Relocation","Highest Degree Required:[note]", "Bachelors","Masters","PhD")
 
 # Print the table
-kable(diff_tab, format = "latex", booktabs = T) %>%
-kable_styling() %>% add_footnote(paste0("Due to missingness, percents are calculated from totals of ",missing[1]," for USA and ",missing[2]," for Europe."), notation = "number")
+kable(diff_tab, format = "latex", booktabs = T,caption="Differences in Job Listings in the US vs. Europe") %>%
+kable_styling(latex_options=c("striped","hold_position")) %>% add_footnote(paste0("Due to missingness, percents are calculated from totals of ",missing[1]," for USA and ",missing[2]," for Europe."), notation = "number")
 
 # model = glm(region == "USA" ~ OffersVisaSponsorship + AllowsRemote +  highest_degree,family='binomial',data=diff_analysis)
 ```
 
+### Changes in Attributes of Job Listings over the Last 5 Years (2013-2017):
+
+```{r trends over time,echo=FALSE,results='tex'}
+tag_yr <- function(yr){
+  toptags = stackjobs %>% 
+    filter(year == yr) %>% 
+    ungroup() %>% 
+    .$Tags %>% 
+    str_split(" ") %>% 
+    unlist() %>% 
+    str_replace_all("-"," ") %>% 
+    data.frame(tags=.,stringsAsFactors=FALSE) %>% 
+    group_by(tags) %>% 
+    count() %>% 
+    arrange(desc(n)) %>% 
+    filter(!is.na(tags)) %>% 
+    filter(!tags %in% c("statistics","bigdata","javascript")) %>% 
+    head(n=10) %>% 
+    .$tags
+}
+
+tag_trend = sapply(2013:2017,tag_yr)
+colnames(tag_trend) = 2013:2017
+row.names(tag_trend) = 1:10
+
+kable(tag_trend,format = "latex", booktabs = T,caption="Top 10 Tags in Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position"))
+
+major_yr <- function(yr){
+  stackjobs %>% 
+    filter(year == yr) %>% 
+    .$majors %>% 
+    unlist() %>% 
+    data.frame(majors=.,stringsAsFactors=FALSE) %>% 
+    group_by(majors) %>% 
+    count() %>% 
+    arrange(desc(n)) %>% 
+    filter(!is.na(majors)) %>% 
+    head(n=10) %>% 
+    .$majors
+}
+
+major_trend = sapply(2013:2017,major_yr)
+colnames(major_trend) = 2013:2017
+row.names(major_trend) = 1:10
+
+#kable(major_trend,format = "latex", booktabs = T,caption="Top 10 Areas of Study in Job Listings by Year")%>%
+#kable_styling(latex_options="hold_position")
+
+city_yr <- function(yr){
+  cities =stackjobs %>%
+    filter(year == yr) %>% 
+    .$LocationString %>% 
+    unlist() %>% 
+    data.frame(locations=.,stringsAsFactors=FALSE) %>% 
+    group_by(locations) %>% 
+    count() %>% 
+    arrange(desc(n)) %>% 
+    filter(!is.na(locations)) %>% 
+    head(n=10) %>% 
+    .$locations %>% 
+    str_split(", ",simplify=TRUE)
+  cities[,1]
+}
+
+city_trend = sapply(2013:2017,city_yr)
+colnames(city_trend) = 2013:2017
+row.names(city_trend) = 1:10
+
+kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position"))
+
+```
+
+\clearpage
 
 ## Discussion/Limitations
 
