@@ -1,7 +1,7 @@
 ---
 title: "Trends in Data Science Job Postings on Stack Overflow"
 author: "Benjamin Ackerman"
-date: "October 4, 2017"
+date: "October 5, 2017"
 mainfont: Times New Roman
 output: 
   pdf_document:
@@ -191,25 +191,22 @@ saveRDS(newdat,"../stackjobs.rds")
 - Increased demand for data scientists, hot new field, Stack Overflow's popularity
 
 ## Research Aim
-The purpose of this paper is to examine trends in job postings for "data scientists" on the Stack Overflow job board.  This involves determining the most common computing skills that employers look for, along with their preferences of degree types and areas of study.  This paper will also locate geographic regions where data science jobs are in highest demand, and if there are substantial differences in job characteristics by location.
+The purpose of this paper is to examine trends in job postings for "data scientists" on the Stack Overflow job board.  This involves determining the most common computing skills that employers look for, along with their preferences of degree types and areas of study.  This paper will also locate geographic regions where data science jobs are in highest demand, and if there are substantial differences in job characteristics by location.  Finally, trends of these characteristics of job listings will be explored over time.
 
 ## Data
-Data were made privately available upon request from David Robinson, a Data Scientist at Stack Overflow.  The provided data consist of information from jobs posted on the Stack Overflow job board that either have "data scientist" or "data analyst" in their title, and were posted between August 25, 2010 and September 25, 2017.  While company names were censored from the data, the following attributes of each posting were provided in a data frame: job title, original posting date, associated tags indicating relevant skills, job location (City, State, Country), salary (when included), and the full text of job descriptions and requirements.
+Data were made privately available upon request from David Robinson, a Data Scientist at Stack Overflow.  The provided data consist of information from jobs posted on the Stack Overflow job board that either have "data scientist" or "data analyst" in their title between August 25, 2010 and September 25, 2017.  While company names were censored from the data, the following attributes of each posting were provided in a data frame: job title, original posting date (YEAR-MM-DD), associated tags indicating relevant skills, job location (City, State, Country), salary (when included), and the full text of job descriptions and requirements.
 
-- Extracted the following for each posting in the data provided:
-    + Month and year when the job was posted
-    + Degree requirement for the job (Bachelors, Masters, PhD)
-    + Preferred majors/departments for the job
-    + Latitude and longitude of the job location using the `geocode` function in the `ggmap` package
-    
+The `geocode` function in the `ggmap` package was used to gather latitude and longitude coordinates for each job location. Preferences of academic backgrounds were extracted from the job requirements.  This included any mentions of type of degree (Bachelors, Masters, PhD) along with mentions of favorable majors and departments.  To detect relevant majors, a dictionary was compiled using a comprehensive list of STEM fields provided by [**Stemdegreelist.com**](http://stemdegreelist.com/stem-degree-list/).  For listings that did not provide job requirement sections, the job descriptions section was used to check for these attributes.
+
 ## Methods
 - Exploratory data analysis
     + Counted number of times each major/department was listed
     + Counted number of times each degree type was listed
+    + Selected "highest degree" as "degree most preferred" in job listings
     + Tabulated number of job postings by month and year
     + Tabulated city locations
-- Generated hex maps of US and Europe to view where most jobs are located
-- Comparison of US and Europe jobs: what characteristics are more likely to land a person a job in Europe vs US?
+- Generated hex maps of US and Europe to view geographic distribution of jobs
+- Comparison of US and Europe jobs: t-tests for first three variables, Chi-Squared test for highest degree
 
 ## Results
 ```{r load data,echo=FALSE}
