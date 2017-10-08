@@ -1,7 +1,7 @@
 ---
 title: "Trends in Data Science Job Postings on Stack Overflow"
 author: "Benjamin Ackerman"
-date: "October 5, 2017"
+date: "October 8, 2017"
 mainfont: Times New Roman
 output: 
   pdf_document:
@@ -460,5 +460,17 @@ kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the 
 \clearpage
 
 ## Discussion/Limitations
+
+Discussion:
+
+- More quantitative fields dominate top areas of study requested
+- While Python has consistently been most tagged skill, R and machine learning have become increasingly more important to data science jobs in the last three years (as they move up the rankings)
+- Most US jobs are in big cities like New York, San Francisco, Boston, and Chicago.  While most jobs overall are located in the US, in the last two years, European cities have been becoming increasingly more popular.
+- There are significant differences between US and European jobs: US allows more remore work, and more jobs for people with Bachelors degrees, while European jobs sponsor more visas and offer more compensation for relocation.
+
+Limitations:
+
+- results do not generalize to all data science job boards - Stack Overflow could attract jobs from particular industries, could be biased in this way
+- skills are detected through tags and not through what is mentioned in the text
 
 ## Conclusion
