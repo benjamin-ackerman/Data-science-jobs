@@ -385,17 +385,15 @@ for(i in 1:3){
 
 p = c(p,chisq.test(tab)$p.value) %>% 
   format(scientific = TRUE,digits = 3) %>% 
-  c(rep("",3))
+  c(rep("",2))
 
-# Put the table together
-diff_tab = rbind(job_diffs,c("",""),degree_diffs)
+diff_tab = rbind(job_diffs,degree_diffs)
 diff_tab=cbind(diff_tab,p)
 colnames(diff_tab) = c("USA","Europe","P-value")
-#colnames(diff_tab) = c(paste0("USA (n= ",diffs[2,4],")"),paste0("Europe (n= ",diffs[1,4],")"),"P-value")
-row.names(diff_tab) = c("Visa Sponsorship","Allows Remote Work", "Offers Relocation","Highest Degree Preferred:[note]", "Bachelors","Masters","PhD")
+row.names(diff_tab) = c("Visa Sponsorship","Allows Remote Work", "Offers Relocation", "Bachelors","Masters","PhD")
 
 # Print the table
-kable(diff_tab, format = "latex", booktabs = T,caption="Differences in Job Listings in the USA vs. Europe") %>%
+kable(diff_tab, format = "latex", booktabs = T,caption="Differences in Job Listings in the USA vs. Europe") %>%group_rows("Highest Degree Preferred:[note]", 4, 6) %>% 
 kable_styling(latex_options=c("striped","hold_position")) %>% add_footnote(paste0("Due to missingness, percents are calculated from totals of ",missing[1]," for USA and ",missing[2]," for Europe."), notation = "number")
 
 # model = glm(region == "USA" ~ OffersVisaSponsorship + AllowsRemote +  highest_degree,family='binomial',data=diff_analysis)
@@ -465,11 +463,31 @@ city_yr <- function(yr){
   cities[,1]
 }
 
+city_yr2 <- function(yr){
+ cities = stackjobs %>%
+    filter(year == yr) %>% 
+    .$LocationString %>% 
+    unlist() %>% 
+    data.frame(locations=.,stringsAsFactors=FALSE) %>% 
+    group_by(locations) %>% 
+    count() %>% 
+    arrange(desc(n)) %>% 
+    filter(!is.na(locations)) %>% 
+    head(n=10) %>% 
+    ungroup %>% 
+    mutate(City = str_split(locations,", ",simplify=TRUE)[,1],
+           n = paste0(n," (",round(n/sum(n) * 100,1),"%)")) %>% 
+    select(City,n) %>% 
+    as.data.frame()
+ colnames(cities)[2] = "n (%)"
+ cities
+}
+
 city_trend = sapply(2013:2017,city_yr)
 colnames(city_trend) = 2013:2017
 row.names(city_trend) = 1:10
 
-kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position"))
+kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) #%>% landscape()
 
 ```
 
