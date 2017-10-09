@@ -256,7 +256,7 @@ toptags = stackjobs %>%
 tags = ggplot(toptags[1:10,], aes(reorder(tags,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
-               axis.text.y = element_text(size=10))
+               axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
 
 topmajors = stackjobs %>% 
   .$majors %>% 
@@ -270,7 +270,7 @@ topmajors = stackjobs %>%
 majors = ggplot(topmajors[1:10,], aes(reorder(majors,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
-               axis.text.y = element_text(size=10))
+               axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
 
 #cowplot::plot_grid(tags,majors, labels = c("Top 10 Tags in Job Listings","Top 10 Areas of Study in Job Listings"), align = "v",scale = 0.9,hjust=-.25)
 
@@ -286,7 +286,7 @@ toplocations = stackjobs %>%
 locations = ggplot(toplocations[1:10,], aes(reorder(locations,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
-               axis.text.y = element_text(size=10))
+               axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
 
 top_row = plot_grid(tags,majors, labels = c("Top 10 Tags in Job Listings","Top 10 Areas of Study in Job Listings",""),scale = 0.9,hjust=-.15,label_size=12)
 bottom_row = plot_grid(locations,labels=c("Top 10 Cities with the Most Job Listings"),scale=.9,hjust=-.35,label_size=12)
@@ -294,11 +294,11 @@ plot_grid(top_row,bottom_row,ncol=1)
 ```
 
 ```{r plot US and EU maps,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=4,fig.width=10}
-mapdat_us = stackjobs %>% 
-  group_by(LocationString) %>% 
-  count() %>% 
-  inner_join(stackjobs,by="LocationString") %>% 
-  filter(CountryCode == "US") %>% 
+mapdat_us = stackjobs %>%
+  group_by(LocationString) %>%
+  count() %>%
+  inner_join(stackjobs,by="LocationString") %>%
+  filter(CountryCode == "US") %>%
   mutate(region = "USA")
 
 us=ggplot()+borders(database="state")+geom_hex(data=mapdat_us, mapping=aes(x=lon,y=lat), bins=15,alpha=.8)+scale_fill_gradient(low = "yellow", high = "red")+theme(
@@ -310,6 +310,25 @@ us=ggplot()+borders(database="state")+geom_hex(data=mapdat_us, mapping=aes(x=lon
                axis.title.y = element_blank(),
                axis.text.y=element_blank(),
                axis.ticks.y=element_blank())
+
+# mapdat_us = stackjobs %>% 
+#   group_by(lat,lon) %>% 
+#   count() %>% 
+#   inner_join(stackjobs,by=c("lat",'lon')) %>% 
+#   filter(CountryCode == "US") %>% 
+#   mutate(region = "USA")
+# us=ggplot()+borders(database="state")+geom_point(data = mapdat_us, color = "red",
+#              aes(x = lon, y = lat, size = n), 
+#              inherit.aes = FALSE, fill = "red", shape = 21, alpha = 0.3) +
+#   scale_size_area(max_size = 16)+theme(
+#               legend.position="none",
+#               axis.title.x = element_blank(),
+#                axis.line = element_blank(),
+#                axis.text.x=element_blank(),
+#                axis.ticks.x=element_blank(),
+#                axis.title.y = element_blank(),
+#                axis.text.y=element_blank(),
+#                axis.ticks.y=element_blank())
 
 mapdat_eu = stackjobs %>% 
   group_by(LocationString) %>% 
@@ -376,7 +395,7 @@ colnames(diff_tab) = c("USA","Europe","P-value")
 row.names(diff_tab) = c("Visa Sponsorship","Allows Remote Work", "Offers Relocation","Highest Degree Preferred:[note]", "Bachelors","Masters","PhD")
 
 # Print the table
-kable(diff_tab, format = "latex", booktabs = T,caption="Differences in Job Listings in the US vs. Europe") %>%
+kable(diff_tab, format = "latex", booktabs = T,caption="Differences in Job Listings in the USA vs. Europe") %>%
 kable_styling(latex_options=c("striped","hold_position")) %>% add_footnote(paste0("Due to missingness, percents are calculated from totals of ",missing[1]," for USA and ",missing[2]," for Europe."), notation = "number")
 
 # model = glm(region == "USA" ~ OffersVisaSponsorship + AllowsRemote +  highest_degree,family='binomial',data=diff_analysis)
