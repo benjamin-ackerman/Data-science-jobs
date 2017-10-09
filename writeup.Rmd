@@ -197,21 +197,13 @@ The purpose of this paper is to examine trends in job postings for "data scienti
 ### Data Collection
 Data were made privately available upon request from David Robinson, a Data Scientist at Stack Overflow.  The provided data consist of information from jobs posted on the Stack Overflow job board that either have "data scientist" or "data analyst" in their title between August 25, 2010 and September 25, 2017.  While company names were censored from the data, the following attributes of each posting were provided in a data frame: job title, original posting date (YEAR-MM-DD), associated tags indicating relevant skills, job location (City, State, Country), salary (when included), and the full text of job descriptions and requirements.
 
-While a fair amount of variables were already provided in a dataframe, additional information was extracted from the data and cleaned.  The `geocode` function in the `ggmap` package was used to gather latitude and longitude coordinates for each job location. Preferences of academic backgrounds were extracted from the job requirements section.  This included any mentions of type of degree (Bachelors, Masters, PhD) along with mentions of favorable majors and departments.  To detect relevant majors, a dictionary was compiled using a comprehensive list of STEM fields provided by [**Stemdegreelist.com**](http://stemdegreelist.com/stem-degree-list/).  For listings that did not provide job requirement sections, the job descriptions section was used to check for these attributes.
+While a fair amount of variables were already provided in a dataframe, additional information was extracted from the data and cleaned.  The `geocode` function in the `ggmap` package was used to gather latitude and longitude coordinates for each job location. Preferences of academic backgrounds were extracted from the job requirements section.  This included any mentions of type of degree (Bachelors, Masters, PhD) along with mentions of favorable majors and departments.  To detect relevant majors, a dictionary was compiled using a comprehensive list of STEM fields provided by [**Stemdegreelist.com**](http://stemdegreelist.com/stem-degree-list/).  Additionally, for jobs that mentioned multiple degrees (i.e, "Bachelor's degree required, Master's degree preferred"), the "highest degree preferred" for a job listing was determined.  For listings that did not provide job requirement sections, the job descriptions section was used to check for these attributes.
 
 ### Exploratory Data Analysis
-Exploratory data analysis was conducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all years of postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.
-
-- Exploratory data analysis:
-    + Counted number of times each degree type was listed
-    + Selected "highest degree" as "degree most preferred" in job listings
-    + Tabulated number of job postings by month and year
-- Generated hex maps of US and Europe to view geographic distribution of jobs
+Exploratory data analysis was conducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.  Hex maps were generated to view the distribution of the number of jobs posted by geographic location.  Number of job postings were also tabulated by month and year to determine if there were any changes in frequency of postings over time.
 
 ### Statistical Analysis
-In order to assess any differences in jobs by location, proportions of jobs that offer visa sponsorship, allow remote work, and assist with relocation were compared between jobs listed in the US and Europe, the two geographic regions with the highest numbers of job listings, using two-sample t-tests.
-
-- Chi-Squared test for highest degree
+In order to assess any differences in jobs by location, proportions of jobs that offer visa sponsorship, allow remote work, and assist with relocation were compared between jobs listed in the US and Europe, the two geographic regions with the highest numbers of job listings, using two-sample t-tests.  The distributions of highest degree preferred were compared across regions with a Pearson's Chi-squared test.
 
 ## Results
 ```{r load data,echo=FALSE}
@@ -301,7 +293,7 @@ bottom_row = plot_grid(locations,labels=c("Top 10 Cities with the Most Job Listi
 plot_grid(top_row,bottom_row,ncol=1)
 ```
 
-```{r actual map,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=4,fig.width=10}
+```{r plot US and EU maps,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=4,fig.width=10}
 mapdat_us = stackjobs %>% 
   group_by(LocationString) %>% 
   count() %>% 
@@ -381,7 +373,7 @@ diff_tab = rbind(job_diffs,c("",""),degree_diffs)
 diff_tab=cbind(diff_tab,p)
 colnames(diff_tab) = c("USA","Europe","P-value")
 #colnames(diff_tab) = c(paste0("USA (n= ",diffs[2,4],")"),paste0("Europe (n= ",diffs[1,4],")"),"P-value")
-row.names(diff_tab) = c("Visa Sponsorship","Allows Remote Work", "Offers Relocation","Highest Degree Required:[note]", "Bachelors","Masters","PhD")
+row.names(diff_tab) = c("Visa Sponsorship","Allows Remote Work", "Offers Relocation","Highest Degree Preferred:[note]", "Bachelors","Masters","PhD")
 
 # Print the table
 kable(diff_tab, format = "latex", booktabs = T,caption="Differences in Job Listings in the US vs. Europe") %>%
