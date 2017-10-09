@@ -1,7 +1,7 @@
 ---
 title: "Trends in Data Science Job Postings on Stack Overflow"
 author: "Benjamin Ackerman"
-date: "October 8, 2017"
+date: "October 9, 2017"
 mainfont: Times New Roman
 output: 
   pdf_document:
@@ -193,20 +193,25 @@ saveRDS(newdat,"../stackjobs.rds")
 ## Research Aim
 The purpose of this paper is to examine trends in job postings for "data scientists" on the Stack Overflow job board.  This involves determining the most common computing skills that employers look for, along with their preferences of degree types and areas of study.  This paper will also locate geographic regions where data science jobs are in highest demand, and if there are substantial differences in job characteristics by location.  Finally, trends of these characteristics of job listings will be explored over time.
 
-## Data
+## Methods
+### Data Collection
 Data were made privately available upon request from David Robinson, a Data Scientist at Stack Overflow.  The provided data consist of information from jobs posted on the Stack Overflow job board that either have "data scientist" or "data analyst" in their title between August 25, 2010 and September 25, 2017.  While company names were censored from the data, the following attributes of each posting were provided in a data frame: job title, original posting date (YEAR-MM-DD), associated tags indicating relevant skills, job location (City, State, Country), salary (when included), and the full text of job descriptions and requirements.
 
-The `geocode` function in the `ggmap` package was used to gather latitude and longitude coordinates for each job location. Preferences of academic backgrounds were extracted from the job requirements.  This included any mentions of type of degree (Bachelors, Masters, PhD) along with mentions of favorable majors and departments.  To detect relevant majors, a dictionary was compiled using a comprehensive list of STEM fields provided by [**Stemdegreelist.com**](http://stemdegreelist.com/stem-degree-list/).  For listings that did not provide job requirement sections, the job descriptions section was used to check for these attributes.
+While a fair amount of variables were already provided in a dataframe, additional information was extracted from the data and cleaned.  The `geocode` function in the `ggmap` package was used to gather latitude and longitude coordinates for each job location. Preferences of academic backgrounds were extracted from the job requirements section.  This included any mentions of type of degree (Bachelors, Masters, PhD) along with mentions of favorable majors and departments.  To detect relevant majors, a dictionary was compiled using a comprehensive list of STEM fields provided by [**Stemdegreelist.com**](http://stemdegreelist.com/stem-degree-list/).  For listings that did not provide job requirement sections, the job descriptions section was used to check for these attributes.
 
-## Methods
-- Exploratory data analysis
-    + Counted number of times each major/department was listed
+### Exploratory Data Analysis
+Exploratory data analysis was conducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all years of postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.
+
+- Exploratory data analysis:
     + Counted number of times each degree type was listed
     + Selected "highest degree" as "degree most preferred" in job listings
     + Tabulated number of job postings by month and year
-    + Tabulated city locations
 - Generated hex maps of US and Europe to view geographic distribution of jobs
-- Comparison of US and Europe jobs: t-tests for first three variables, Chi-Squared test for highest degree
+
+### Statistical Analysis
+In order to assess any differences in jobs by location, proportions of jobs that offer visa sponsorship, allow remote work, and assist with relocation were compared between jobs listed in the US and Europe, the two geographic regions with the highest numbers of job listings, using two-sample t-tests.
+
+- Chi-Squared test for highest degree
 
 ## Results
 ```{r load data,echo=FALSE}
@@ -254,9 +259,9 @@ toptags = stackjobs %>%
   count() %>% 
   arrange(desc(n)) %>% 
   filter(!is.na(tags)) %>% 
-  filter(!tags %in% c("statistics","bigdata","javascript"))
+  filter(!tags %in% c("statistics","bigdata","javascript","data science"))
 
-tags = ggplot(toptags[1:10,], aes(reorder(tags,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="Tags")+theme(axis.title.x=element_text(size=11),
+tags = ggplot(toptags[1:10,], aes(reorder(tags,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
                axis.text.y = element_text(size=10))
@@ -270,7 +275,7 @@ topmajors = stackjobs %>%
   arrange(desc(n)) %>% 
   filter(!is.na(majors))
 
-majors = ggplot(topmajors[1:10,], aes(reorder(majors,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="Area of Study")+theme(axis.title.x=element_text(size=11),
+majors = ggplot(topmajors[1:10,], aes(reorder(majors,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
                axis.text.y = element_text(size=10))
@@ -286,7 +291,7 @@ toplocations = stackjobs %>%
   arrange(desc(n)) %>% 
   filter(!is.na(locations))
 
-locations = ggplot(toplocations[1:10,], aes(reorder(locations,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="City")+theme(axis.title.x=element_text(size=11),
+locations = ggplot(toplocations[1:10,], aes(reorder(locations,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
                axis.text.y = element_text(size=10))
@@ -401,7 +406,7 @@ tag_yr <- function(yr){
     count() %>% 
     arrange(desc(n)) %>% 
     filter(!is.na(tags)) %>% 
-    filter(!tags %in% c("statistics","bigdata","javascript")) %>% 
+    filter(!tags %in% c("statistics","bigdata","javascript","data science")) %>% 
     head(n=10) %>% 
     .$tags
 }
