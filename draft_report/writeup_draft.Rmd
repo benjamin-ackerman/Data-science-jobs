@@ -1,0 +1,557 @@
+---
+title: "Trends in Data Science Job Postings on Stack Overflow"
+author: "Benjamin Ackerman"
+date: "October 10, 2017"
+mainfont: Times New Roman
+output: 
+  pdf_document:
+    latex_engine: xelatex
+fontsize: 12pt
+geometry: margin=1in
+---
+
+```{r setup, echo=FALSE, warning=FALSE,message=FALSE,results='hide'}
+packages = c("devtools","qdapRegex","knitr","dplyr","kableExtra","ggmap","stringr","tidyr","rebus","maps","grid","cowplot","ggplot2")
+
+check.packages = function(package){
+  if(!package %in% library()$results[,1]){install.packages(package,dependencies=TRUE)}
+  else{("already installed")}
+}
+
+# Install packages that are not already installed
+sapply(packages,check.packages)
+
+# Load all necessary packages
+lapply(packages,library,character.only=TRUE)
+```
+
+```{r test setup, include=FALSE}
+opts_chunk$set(dev = 'pdf')
+```
+
+```{r read and clean stack overflow data dump, eval=FALSE, echo=FALSE}
+### This chunk contains the code used to clean and extract data by reading in the original RDS file from David Robinson.  To save time, this code doesn't run, and the cleaned data are already saved in the _____
+
+# Read in original data
+newdat<-readRDS('../data_scientist.rds')
+
+# Split up the date into year, month, day
+newdat[,c("year","month","day")]<-str_split(newdat$DatePosted,"-",simplify=TRUE)
+
+# Clean Jobs that have multiple locataions 
+repeats<-unique(newdat$JobId[which(duplicated(newdat$JobId))])
+repeat_locations<-sapply(1:length(repeats),function(x){
+   str_split(newdat$LocationString[which(newdat$JobId == repeats[x])],"; ",simplify=TRUE)[1,]
+})
+newdat$LocationString[which(newdat$JobId %in% repeats)] = unlist(repeat_locations)
+
+# Clean locations a little more
+newdat$LocationString = str_replace(newdat$LocationString,"London, England","London, UK")
+
+# Geocode locations to plot them
+latlon<-geocode(newdat$LocationString,output='latlon')
+newdat = cbind(newdat,latlon)
+
+#newdat$lat = jitter_latlong(latlon$lat,type='lat')
+#newdat$lon = jitter_latlong(latlon$lon,type='long',newdat$lat)
+
+### Regular expressions to find strong/ideal requirements, and lines in requirement decriptions to delete
+strong=or("[Ii]"%R%"deal"%R%optional("ly"),
+   "[Pp]"%R%"refer"%R%optional(or("s","red")))
+
+delete = or(exactly("\\"%R%"r"%R%"\\"%R%"n"),
+            exactly(optional("/")%R%or("p","li","ul","em","br","strong","span","sup","rd","blockquote")),
+            exactly(or("",":",": ")))
+
+# Functions to clean requirements data
+get_requirements = function(x){
+  reqs = unlist(str_split(newdat$Requirements[x],or("<",">"))) %>% 
+  str_replace_all("&nbsp;","") %>%
+  str_replace_all("&ldquo;","'") %>% 
+  str_replace_all(or("&rdquo;","&rsquo;"),"'") %>% 
+  str_replace_all("&nbsp;","") %>% 
+  str_replace_all("&middot;","") %>% 
+  str_replace_all("&amp;","&") %>% 
+  str_replace_all("&bull; ","") %>%
+  str_replace_all("\n ","") %>%
+  str_replace_all("&ndash;","-") %>%
+  str_replace_all("\\"%R%"r"%R%"\\"%R%"n","") %>% 
+  str_replace(START%R%or("- ","-"),"") %>% 
+  str_replace(START%R%optional("o")%R%" ","")
+  
+  reqs[!str_detect(reqs,delete)]
+  #reqs[-str_detect(reqs,delete)]
+  #reqs[str_detect(reqs,START%R%char_class("A-Z"))]
+  #reqs[str_detect(reqs,strong)]
+  #reqs[str_detect(reqs,or(":",": ") %R% END)]
+}
+
+get_description = function(x){
+  description = unlist(str_split(newdat$Description[x],or("<",">"))) %>% 
+    str_replace_all("&nbsp;","") %>%
+    str_replace_all("&ldquo;","'") %>% 
+    str_replace_all(or("&rdquo;","&rsquo;"),"'") %>% 
+    str_replace_all("&nbsp;","") %>% 
+    str_replace_all("&middot;","") %>% 
+    str_replace_all("&amp;","&") %>% 
+    str_replace_all("&bull; ","") %>%
+    str_replace_all("\n ","") %>%
+    str_replace_all("&ndash;","-") %>%
+    str_replace_all("\\"%R%"r"%R%"\\"%R%"n","") %>% 
+    str_replace(START%R%or("- ","-"),"") %>% 
+    str_replace(START%R%optional("o")%R%" ","")
+  
+  description[!str_detect(description,delete)]
+}
+
+#Row numbers of jobs with requirements and description sections:
+req_nums = which(!is.na(newdat$Requirements))
+desc_nums = which(!is.na(newdat$Description))
+desc_nums = desc_nums[-req_nums]
+
+# Get Requirements Sections cleaned:
+reqs<-lapply(req_nums,get_requirements)
+# Get Descriptions Section cleaned, and *only* look at descriptions where requirements are missing:
+desc<-lapply(desc_nums,get_description)
+
+# Regular expression to find Bachelors degrees:
+bachelors_degree <- or("[Bb]achelor","BA" %R% optional("/")%R% "BS", "B" %R% optional('.') %R% "S","B" %R% optional('.') %R% "A")
+# Do not include these though!
+no_bachelor<-or("VBA","RDMBS","Hive-BA","BAU","BART")
+
+# Extract lines from the requirements and descriptions that mention Bachelors degrees:
+bachelors_req<-lapply(reqs, function(x){x[str_detect(x,bachelors_degree) & !str_detect(x,no_bachelor)]})
+bachelors_desc<-lapply(desc, function(x){x[str_detect(x,bachelors_degree) & !str_detect(x,no_bachelor)]})
+
+newdat$bachelors = 0
+newdat$bachelors[c(req_nums[lapply(bachelors_req,length)>0],desc_nums[lapply(bachelors_desc,length)>0])
+] = 1
+
+# Regular expression to find Masters degrees:
+masters_degree <- or("[Mm]" %R% "aster" %R% optional("'") %R% "s","MSc","M"%R%optional(DOT)%R%optional(SPC)%R%"S"%R%optional(DOT))
+# Do not include these though!
+no_masters = or("RDBMS",case_insensitive("ms")%R%optional(SPC)%R%or(case_insensitive("sql"),case_insensitive("excel"),case_insensitive("word"),case_insensitive("power"),case_insensitive("share"),case_insensitive("project"),case_insensitive("SSIS"),case_insensitive("office"),case_insensitive("access"),case_insensitive("report")),"MSAs","MSMQ","MSKCC","RDMS")
+
+# Extract lines from the requirements and descriptions that mention Bachelors degrees:
+masters_req<-lapply(reqs, function(x){x[str_detect(x,masters_degree) & !str_detect(x,no_masters)]})
+masters_desc<-lapply(desc, function(x){x[str_detect(x,masters_degree) & !str_detect(x,no_masters)]})
+
+newdat$masters = 0
+newdat$masters[c(req_nums[lapply(masters_req,length)>0],desc_nums[lapply(masters_desc,length)>0])
+] = 1
+
+# Regular expression to find PhD degrees:
+phd_degree <- or("P" %R% optional(DOT) %R% "h" %R% optional(DOT) %R%optional(SPC)%R% or("D","d"),"[Dd]octorate")
+
+# Extract lines from the requirements and descriptions that mention Bachelors degrees:
+phds_req<-lapply(reqs, function(x){x[str_detect(x,phd_degree)]})
+phds_desc<-lapply(desc, function(x){x[str_detect(x,phd_degree)]})
+
+newdat$phd = 0
+newdat$phd[c(req_nums[lapply(phds_req,length)>0],desc_nums[lapply(phds_desc,length)>0])
+] = 1
+
+# Create a variable that indicates the highest degree listed in the job listing:
+newdat$highest_degree = ifelse(newdat$phd == 1, "phd",ifelse(newdat$masters==1, "masters",ifelse(newdat$bachelors==1, "bachelors",NA)))
+
+## Find STEM majors:
+stem_degrees<-readLines("http://stemdegreelist.com/stem-degree-list/")
+stem<-as.character(na.omit(unlist(rm_between(stem_degrees,"<li>","</li>",extract=TRUE))))
+stem = c(stem,"applied math","CS","operation research","Computational Physics","Biostatistics")
+
+# Extract all of the requested majors based on the STEM
+majors_wanted_req = majors_wanted_desc = list()
+for(i in 1:length(reqs)){
+  majors_wanted_req[[i]]=unique(names(which(sapply(stem, function(x){
+    any(str_detect(reqs[[i]],"\\b"%R%case_insensitive(x)%R%"\\b"))})==TRUE)))
+}
+for(i in 1:length(desc)){
+  majors_wanted_desc[[i]]=unique(names(which(sapply(stem, function(x){
+    any(str_detect(desc[[i]],"\\b"%R%case_insensitive(x)%R%"\\b"))})==TRUE)))
+}
+
+# If "Applied Mathematics" is listed, get rid of "Mathematics" from the list
+for(i in which(lapply(majors_wanted_req,length)>0)){
+    if(sum(sapply(mathstrings,function(x){str_detect(majors_wanted_req[[i]],case_insensitive(exactly(x)))}))==2){
+majors_wanted_req[[i]]=majors_wanted_req[[i]][-which(str_detect(majors_wanted_req[[i]],case_insensitive(exactly("Mathematics"))))]}}
+
+for(i in which(lapply(majors_wanted_desc,length)>0)){
+    if(sum(sapply(mathstrings,function(x){str_detect(majors_wanted_desc[[i]],case_insensitive(exactly(x)))}))==2){
+majors_wanted_desc[[i]]=majors_wanted_desc[[i]][-which(str_detect(majors_wanted_desc[[i]],case_insensitive(exactly("Mathematics"))))]}}
+
+# Clean up "CS","applied math" and "operation research"
+majors_wanted_req = lapply(majors_wanted_req,function(x){str_replace_all(x,"CS","Computer Science")})
+majors_wanted_req = lapply(majors_wanted_req,function(x){str_replace_all(x,"applied math","Applied Mathematics")})
+majors_wanted_req = lapply(majors_wanted_req,function(x){str_replace_all(x,"operation research","Operations Research")})
+
+majors_wanted_desc = lapply(majors_wanted_desc,function(x){str_replace_all(x,"CS","Computer Science")})
+majors_wanted_desc = lapply(majors_wanted_desc,function(x){str_replace_all(x,"applied math","Applied Mathematics")})
+majors_wanted_desc = lapply(majors_wanted_desc,function(x){str_replace_all(x,"operation research","Operations Research")})
+
+newdat$majors = NA
+newdat$majors[req_nums] = majors_wanted_req
+newdat$majors[desc_nums] = majors_wanted_desc
+newdat$majors[which(lapply(newdat$majors,length)==0)]=NA
+
+# Save updated dataset as "stackjobs.rds"
+saveRDS(newdat,"../stackjobs.rds")
+```
+
+## Introduction
+- Overall importance of statistics and data-driven jobs - "if there are data, there's need for a statistician"
+- Increased demand for data scientists as more data become available ("big data")
+- "hot new field"
+- Stack Overflow's popularity
+- So much change in best coding languages to know and where to look for jobs
+- *Find some papers or blog posts that talk about data science as a field and its growth*
+
+## Research Aim
+The purpose of this paper is to examine trends in job postings for "data scientists" on the Stack Overflow job board.  This involves determining the most common computing skills that employers look for, along with their preferences of degree types and areas of study.  This paper will also locate geographic regions where data science jobs are in highest demand, and if there are substantial differences in job characteristics by location.  Finally, trends of these characteristics of job listings will be explored over time.
+
+## Methods
+### Data Collection
+Data were made privately available upon request from David Robinson, a Data Scientist at Stack Overflow.  The provided data consist of information from jobs posted on the Stack Overflow job board that either have "data scientist" or "data analyst" in their title between August 25, 2010 and September 25, 2017.  While company names were censored from the data, the following attributes of each posting were provided in a data frame: job title, original posting date (YEAR-MM-DD), associated tags indicating relevant skills, job location (City, State, Country), salary (when included), and the full text of job descriptions and requirements.
+
+While a fair amount of variables were already provided in a dataframe, additional information was extracted from the data and cleaned.  The `geocode` function in the `ggmap` package was used to gather latitude and longitude coordinates for each job location. Preferences of academic backgrounds were extracted from the job requirements section.  This included any mentions of type of degree (Bachelors, Masters, PhD) along with mentions of favorable majors and departments.  To detect relevant majors, a dictionary was compiled using a comprehensive list of STEM fields provided by [**Stemdegreelist.com**](http://stemdegreelist.com/stem-degree-list/).  Additionally, for jobs that mentioned multiple degrees (i.e, "Bachelor's degree required, Master's degree preferred"), the "highest degree preferred" for a job listing was determined.  For listings that did not provide job requirement sections, the job descriptions section was used to check for these attributes.
+
+### Exploratory Data Analysis
+Exploratory data analysis was conducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.  Hex maps were generated to view the distribution of the number of jobs posted by geographic location. To visualize the changes in the top ten tags, areas of study, and job locations over the last five years, code to generate a change-in-ranking plot was modified from a function described on [**this Stack Overflow forum**](https://stackoverflow.com/questions/25781284/simplest-way-to-plot-changes-in-ranking-between-two-ordered-lists-in-r). Number of job postings were also tabulated by year and geographic region to determine if there were any changes in frequency of postings by region over time.
+
+### Statistical Analysis
+In order to assess any differences in jobs by location, proportions of jobs that offer visa sponsorship, allow remote work, and assist with relocation were compared between jobs listed in the US and Europe, the two geographic regions with the highest numbers of job listings, using two-sample t-tests.  The distributions of highest degree preferred were compared across regions with a Pearson's Chi-squared test.
+
+## Results
+```{r load data,echo=FALSE}
+stackjobs = readRDS("../stackjobs.rds")
+```
+
+```{r plot ranks function, echo=FALSE}
+plotRanks <- function(a, b,c,d,e, title.text,arrow.len=.1)
+  {
+  old.par <- par(mar=c(1,1,1,1))
+
+  # Find the length of the vectors
+  len.1 <- length(a)
+  len.2 <- length(b)
+  len.3 <- length(c)
+  len.4 <- length(d)
+  len.5 <- length(e)
+
+  # Plot two columns of equidistant points
+  plot(rep(1, len.1), 1:len.1, type='n',# cex=0.8, 
+       xlim=c(0, 20), ylim=c(0, max(len.1, len.2,len.3,len.4,len.5)+1.3),
+       axes=F, xlab="", ylab="") # Remove axes and labels
+#  points(rep(5, len.2), 1:len.2, pch=20, cex=0.8)
+#  points(rep(9, len.3), 1:len.3, pch=20, cex=0.8)
+#  points(rep(13, len.4), 1:len.4, pch=20, cex=0.8)
+#  points(rep(17, len.5), 1:len.5, pch=20, cex=0.8)
+  title(title.text,adj=0)
+  
+  # Put labels next to each observation
+  text(c(1,5,9,13,17), rep(max(len.1)+1,5), c(expression(underline(bold("2013"))),expression(underline(bold("2014"))),expression(underline(bold("2015"))),expression(underline(bold("2016"))),expression(underline(bold("2017")))))
+  text(rep(1, len.1), 1:len.1, rev(a))
+  text(rep(5, len.2), 1:len.2, rev(b))
+  text(rep(9, len.3), 1:len.3, rev(c))
+  text(rep(13, len.4), 1:len.4, rev(d))
+  text(rep(17, len.5), 1:len.5, rev(e))
+
+    # Now we need to map where the elements of a are in b
+  # We use the match function for this job
+  a.to.b <- match(rev(a), rev(b))
+  b.to.c <- match(rev(b), rev(c))
+  c.to.d <- match(rev(c), rev(d))
+  d.to.e <- match(rev(d), rev(e))
+
+  # Now we can draw arrows from the first column to the second
+  arrows(rep(2.25,len.1), 1:len.1, rep(3.75, len.2), a.to.b, 
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - a.to.b == 0,"grey",ifelse(1:len.1 - a.to.b > 0, "red","green")))
+  arrows(rep(6.25, len.1), 1:len.1, rep(7.75, len.2), b.to.c, 
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - b.to.c == 0,"grey",ifelse(1:len.1 - b.to.c > 0, "red","green")))
+  arrows(rep(10.25, len.1), 1:len.1, rep(11.75, len.2), c.to.d, 
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - c.to.d == 0,"grey",ifelse(1:len.1 - c.to.d > 0, "red","green")))
+  arrows(rep(14.25, len.1), 1:len.1, rep(15.75, len.2), d.to.e, 
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - d.to.e == 0,"grey",ifelse(1:len.1 - d.to.e > 0, "red","green")))
+  
+  par(old.par)
+}
+
+```
+The top three computing skills listed as tags on job listings are `Python`, `R` and `SQL` (Figure 1a).  Of the 995 jobs listed, 448 jobs (`r paste0(round(448/995 * 100,1),"%")`) use the `Python` tag, 281 jobs (`r paste0(round(281/995 * 100,1),"%")`) use the `R` tag and 249 jobs (`r paste0(round(249/995 * 100,1),"%")`) use the `SQL` tag.  Employers' focus on coding abilities are also highlighted in the top three preferred areas of study for data science job candidates (Figure 1b): Computer Science (n = 469, `r paste0(round(469/995 * 100,1),"%")`), Statistics (n = 436,  `r paste0(round(436/995 * 100,1),"%")`) and Engineering (n = 301, `r paste0(round(301/995 * 100,1),"%")`).  Figures 1c and 3 suggest that most data science jobs are located in big cities, led by tech hubs New York, NY and San Francisco, CA.  Several European cities (London, Berlin, and Amsterdam), are represented in the top ten cities for data science jobs as well.  Also, as the number of data science job listings has increased over time, so too has the proportion of jobs that are located in Europe (Figure 2).
+
+Differences between jobs listed in the United States and jobs listed in Europe are described in Table 1.  European employers are more likely to offer visa sponsorship (EU: 20.8%, USA: 5.9%, p < .01) and to offer assistance with relocation (EU: 35.5%, USA: 26.6%, p < .01) than US employers.  US employers are more likely to allow employees to work remotely (USA: 9.2%, EU: 2.8%, p < .01) and offer more jobs for candidates with Bachelor's Degrees only (p < .01) than European employers.
+
+- While Python has consistently been most tagged skill, R and machine learning have become increasingly more important to data science jobs in the last three years (as they move up the rankings)
+- No major changes in top areas of study over time
+- Most US jobs are in big cities like New York, San Francisco, Boston, and Chicago.  While most jobs overall are located in the US, in the last two years, European cities have been becoming increasingly more popular. Biggest changes in top cities has happened between 2016 and 2017 as seen in the length of the arrows - more European cities are rising to the top while US cities are falling.
+
+#### Figure 1: Most Popular Attributes of Job Listings
+
+```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
+toptags = stackjobs %>% 
+  ungroup() %>% 
+  .$Tags %>% 
+  str_split(" ") %>% 
+  unlist() %>% 
+  str_replace_all("-"," ") %>% 
+  data.frame(tags=.,stringsAsFactors=FALSE) %>% 
+  group_by(tags) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  filter(!is.na(tags)) %>% 
+  filter(!tags %in% c("statistics","bigdata","javascript","data science"))
+
+tags = ggplot(toptags[1:10,], aes(reorder(tags,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
+               axis.title.y=element_text(size=11),
+               axis.text.x = element_text(size=10),
+               axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
+
+topmajors = stackjobs %>% 
+  .$majors %>% 
+  unlist() %>% 
+  data.frame(majors=.,stringsAsFactors=FALSE) %>% 
+  group_by(majors) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  filter(!is.na(majors))
+
+majors = ggplot(topmajors[1:10,], aes(reorder(majors,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
+               axis.title.y=element_text(size=11),
+               axis.text.x = element_text(size=10),
+               axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
+
+toplocations = stackjobs %>% 
+  .$LocationString %>% 
+  unlist() %>% 
+  data.frame(locations=.,stringsAsFactors=FALSE) %>% 
+  group_by(locations) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  filter(!is.na(locations))
+
+locations = ggplot(toplocations[1:10,], aes(reorder(locations,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
+               axis.title.y=element_text(size=11),
+               axis.text.x = element_text(size=10),
+               axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
+
+top_row = plot_grid(tags,majors, labels = c("(a) Top 10 Tags in Job Listings","(b) Top 10 Areas of Study in Job Listings",""),scale = 0.9,hjust=-.15,label_size=10)
+bottom_row = plot_grid(locations,labels=c("(c) Top 10 Cities with the Most Job Listings"),scale=.9,hjust=-.35,label_size=10)
+plot_grid(top_row,bottom_row,ncol=1)
+```
+
+#### Figure 2: Number of Job Listings by Year and Geographic Region
+```{r number of jobs by region and year, echo=FALSE, warning=FALSE,message=FALSE,fig.align='center',fig.height=3,fig.width=6}
+region_year_dat = stackjobs %>% 
+  mutate(Region = ifelse(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB"), "Europe",ifelse(CountryCode == "US","USA","Other"))) %>% 
+  group_by(Region,year) %>% 
+  count() #%>% 
+  #filter(year > 2012)
+
+ggplot(region_year_dat, aes((year),n,fill=Region)) + geom_col() + #coord_flip() +
+  labs(y="Count",x="")+#scale_x_discrete(labels=rev(names(table(region_year_dat$year))))+
+  theme(axis.title.x=element_text(size=11),
+               axis.title.y=element_text(size=11),
+               axis.text.x = element_text(size=10),
+               axis.text.y = element_text(size=10),
+               legend.text=element_text(size=9),
+               legend.title=element_text(size=9))+scale_y_continuous(expand=c(0,0))
+
+```
+
+
+### Figure 3: Geographic Distribution of Jobs in the USA vs. Europe
+
+```{r plot US and EU maps,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=4,fig.width=10}
+mapdat_us = stackjobs %>%
+  group_by(LocationString) %>%
+  count() %>%
+  inner_join(stackjobs,by="LocationString") %>%
+  filter(CountryCode == "US") %>%
+  mutate(region = "USA")
+
+us=ggplot()+borders(database="state")+geom_hex(data=mapdat_us, mapping=aes(x=lon,y=lat), bins=15,alpha=.8)+scale_fill_gradient(low = "yellow", high = "red")+theme(
+              legend.position="none",
+              axis.title.x = element_blank(),
+               axis.line = element_blank(),
+               axis.text.x=element_blank(),
+               axis.ticks.x=element_blank(),
+               axis.title.y = element_blank(),
+               axis.text.y=element_blank(),
+               axis.ticks.y=element_blank())
+
+# mapdat_us = stackjobs %>% 
+#   group_by(lat,lon) %>% 
+#   count() %>% 
+#   inner_join(stackjobs,by=c("lat",'lon')) %>% 
+#   filter(CountryCode == "US") %>% 
+#   mutate(region = "USA")
+# us=ggplot()+borders(database="state")+geom_point(data = mapdat_us, color = "red",
+#              aes(x = lon, y = lat, size = n), 
+#              inherit.aes = FALSE, fill = "red", shape = 21, alpha = 0.3) +
+#   scale_size_area(max_size = 16)+theme(
+#               legend.position="none",
+#               axis.title.x = element_blank(),
+#                axis.line = element_blank(),
+#                axis.text.x=element_blank(),
+#                axis.ticks.x=element_blank(),
+#                axis.title.y = element_blank(),
+#                axis.text.y=element_blank(),
+#                axis.ticks.y=element_blank())
+
+mapdat_eu = stackjobs %>% 
+  group_by(LocationString) %>% 
+  count() %>% 
+  inner_join(stackjobs,by="LocationString") %>%
+  filter(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB")) %>% 
+  mutate(region = "EU")
+
+europe=ggplot()+borders(database="world",xlim=c(-10,25),ylim=c(40,70))+geom_hex(data=mapdat_eu, mapping=aes(x=lon,y=lat), bins=15,alpha=.8)+scale_fill_gradient("# of Jobs",low = "yellow", high = "red")+theme(
+               axis.title.x = element_blank(),
+               axis.line = element_blank(),
+               axis.text.x=element_blank(),
+               axis.ticks.x=element_blank(),
+               axis.title.y = element_blank(),
+               axis.text.y=element_blank(),
+               axis.ticks.y=element_blank(),
+               legend.title=element_text(size=10),
+               legend.text=element_text(size=10))
+
+plot_grid(us,europe, labels = c(paste0("(a) USA (n=",nrow(mapdat_us),")"), paste0("(b) Europe (n=",nrow(mapdat_eu),")")), align = "v", label_size=12)
+```
+
+
+```{r model differences between US and EU jobs, echo=FALSE,results='tex'}
+# Group data by Region: US or Europe
+diff_analysis = stackjobs %>% 
+  filter(CountryCode %in% c("US","AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB")) %>% 
+  mutate(region = ifelse(CountryCode == "US","USA","EU"))
+
+# Tabulate differences for Visa Sponsorship, Remote Work, and Offering Relocation
+diffs=as.matrix(diff_analysis %>% 
+  group_by(region) %>% 
+  summarise(visa = sum(OffersVisaSponsorship),
+            remote = sum(AllowsRemote),
+            relocation = sum(OffersRelocation),
+            n=n()) %>% 
+  select(-region))
+
+job_diffs = matrix(paste0(diffs[,-4]," (", round(diffs/diffs[,4]*100,1)[,-4],"%)"),ncol=2,byrow=TRUE)[,c(2,1)]
+
+# Tabulate differences in highest degree required
+tab<-with(diff_analysis,table(region,highest_degree))
+degree_diffs = matrix(paste0(t(tab)," (", round(t(prop.table(tab,1))*100,1),"%)")
+,ncol=2)[,c(2,1)]
+
+# Find how many per region are missing highest degree information
+missing = as.numeric(with(diff_analysis,table(region,is.na(highest_degree)))[,1])[c(2,1)]
+
+# Test if there is a difference between the proportions for US and Europe, and report p-value
+p=rep(NA,3)
+for(i in 1:3){
+  p[i] = prop.test(diffs[,i],diffs[,4])$p.value
+}
+
+p = c(p,chisq.test(tab)$p.value) %>% 
+  format(scientific = TRUE,digits = 3) %>% 
+  c(rep("",2))
+
+diff_tab = rbind(job_diffs,degree_diffs)
+diff_tab=cbind(diff_tab,p)
+colnames(diff_tab) = c("USA","Europe","P-value")
+row.names(diff_tab) = c("Visa Sponsorship","Allows Remote Work", "Offers Relocation", "Bachelors","Masters","PhD")
+
+# Print the table
+kable(diff_tab, format = "latex", booktabs = T,caption="Differences between Job Listings in the USA vs. Europe") %>%group_rows("Highest Degree Preferred:[note]", 4, 6) %>% 
+kable_styling(latex_options=c("striped","hold_position")) %>% add_footnote(paste0("Due to missingness, percents are calculated from totals of ",missing[1]," for USA and ",missing[2]," for Europe."), notation = "number")
+
+# model = glm(region == "USA" ~ OffersVisaSponsorship + AllowsRemote +  highest_degree,family='binomial',data=diff_analysis)
+```
+
+#### Figure 4: Changes in Job Listing Attributes over the Last Five Years
+
+```{r trends over time,echo=FALSE,results='tex',fig.align='center',fig.height=7,fig.width=9.5}
+tag_yr <- function(yr){
+  toptags = stackjobs %>% 
+    filter(year == yr) %>% 
+    ungroup() %>% 
+    .$Tags %>% 
+    str_split(" ") %>% 
+    unlist() %>% 
+    str_replace_all("-"," ") %>% 
+    data.frame(tags=.,stringsAsFactors=FALSE) %>% 
+    group_by(tags) %>% 
+    count() %>% 
+    arrange(desc(n)) %>% 
+    filter(!is.na(tags)) %>% 
+    filter(!tags %in% c("statistics","bigdata","javascript","data science","data","analytics","algorithm")) %>% 
+    head(n=10) %>% 
+    .$tags
+}
+
+tag_trend = sapply(2013:2017,tag_yr)
+colnames(tag_trend) = 2013:2017
+row.names(tag_trend) = 1:10
+
+
+#kable(tag_trend,format = "latex", booktabs = T,caption="Top 10 Tags in Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position"))
+
+major_yr <- function(yr){
+  stackjobs %>% 
+    filter(year == yr) %>% 
+    .$majors %>% 
+    unlist() %>% 
+    data.frame(majors=.,stringsAsFactors=FALSE) %>% 
+    group_by(majors) %>% 
+    count() %>% 
+    arrange(desc(n)) %>% 
+    filter(!is.na(majors)) %>% 
+    head(n=10) %>% 
+    .$majors
+}
+
+major_trend = sapply(2013:2017,major_yr)
+colnames(major_trend) = 2013:2017
+row.names(major_trend) = 1:10
+
+#kable(major_trend,format = "latex", booktabs = T,caption="Top 10 Areas of Study in Job Listings by Year")%>%
+#kable_styling(latex_options="hold_position")
+
+city_yr <- function(yr){
+  cities =stackjobs %>%
+    filter(year == yr) %>% 
+    .$LocationString %>% 
+    unlist() %>% 
+    data.frame(locations=.,stringsAsFactors=FALSE) %>% 
+    group_by(locations) %>% 
+    count() %>% 
+    arrange(desc(n)) %>% 
+    filter(!is.na(locations)) %>% 
+    head(n=10) %>% 
+    .$locations %>% 
+    str_split(", ",simplify=TRUE)
+  cities[,1]
+}
+
+city_trend = sapply(2013:2017,city_yr)
+colnames(city_trend) = 2013:2017
+row.names(city_trend) = 1:10
+
+par(mfrow=c(3,1))
+plotRanks(tag_trend[,1],tag_trend[,2],tag_trend[,3],tag_trend[,4],tag_trend[,5],"(a) Top 10 Tags by Year")
+plotRanks(major_trend[,1],major_trend[,2],major_trend[,3],major_trend[,4],major_trend[,5],"(b) Top 10 Areas of Study by Year")
+plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend[,5],"(c) Top 10 Cities by Year")
+
+#kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) %>% landscape()
+```
+
+## Discussion/Limitations
+
+Discussion:
+
+
+Limitations:
+
+- results do not generalize to all data science job boards - Stack Overflow could attract jobs from particular industries, or in particular cities, and could be biased in this way
+    + no way to assess mechanism by which SO obtains job listings
+- skills are detected through tags and not through what is mentioned in the text
+- variability in how job descriptions and requirements are written up, and when they were missing, could result in underestimates of true skills and attributes required
+- estimates for 2017 jobs are only through September 25, 2017, and may change once the year is complete.
