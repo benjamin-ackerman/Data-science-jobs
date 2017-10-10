@@ -198,7 +198,12 @@ saveRDS(newdat,"../stackjobs.rds")
 ```
 
 ## Introduction
-- Increased demand for data scientists, hot new field, Stack Overflow's popularity
+- Overall importance of statistics and data-driven jobs - "if there are data, there's need for a statistician"
+- Increased demand for data scientists as more data become available ("big data")
+- "hot new field"
+- Stack Overflow's popularity
+- So much change in best coding languages to know and where to look for jobs
+- *Find some papers or blog posts that talk about data science as a field and its growth*
 
 ## Research Aim
 The purpose of this paper is to examine trends in job postings for "data scientists" on the Stack Overflow job board.  This involves determining the most common computing skills that employers look for, along with their preferences of degree types and areas of study.  This paper will also locate geographic regions where data science jobs are in highest demand, and if there are substantial differences in job characteristics by location.  Finally, trends of these characteristics of job listings will be explored over time.
@@ -545,8 +550,8 @@ Discussion:
 
 Limitations:
 
-- results do not generalize to all data science job boards - Stack Overflow could attract jobs from particular industries, could be biased in this way
+- results do not generalize to all data science job boards - Stack Overflow could attract jobs from particular industries, or in particular cities, and could be biased in this way
+    + no way to assess mechanism by which SO obtains job listings
 - skills are detected through tags and not through what is mentioned in the text
+- variability in how job descriptions and requirements are written up, and when they were missing, could result in underestimates of true skills and attributes required
 - estimates for 2017 jobs are only through September 25, 2017, and may change once the year is complete.
-
-## Conclusion
