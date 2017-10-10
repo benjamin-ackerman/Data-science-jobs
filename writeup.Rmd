@@ -200,7 +200,7 @@ Data were made privately available upon request from David Robinson, a Data Scie
 While a fair amount of variables were already provided in a dataframe, additional information was extracted from the data and cleaned.  The `geocode` function in the `ggmap` package was used to gather latitude and longitude coordinates for each job location. Preferences of academic backgrounds were extracted from the job requirements section.  This included any mentions of type of degree (Bachelors, Masters, PhD) along with mentions of favorable majors and departments.  To detect relevant majors, a dictionary was compiled using a comprehensive list of STEM fields provided by [**Stemdegreelist.com**](http://stemdegreelist.com/stem-degree-list/).  Additionally, for jobs that mentioned multiple degrees (i.e, "Bachelor's degree required, Master's degree preferred"), the "highest degree preferred" for a job listing was determined.  For listings that did not provide job requirement sections, the job descriptions section was used to check for these attributes.
 
 ### Exploratory Data Analysis
-Exploratory data analysis was conducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.  Hex maps were generated to view the distribution of the number of jobs posted by geographic location. To visualize the changes in the top ten tags, areas of study, and job locations over the last five years, code to generate a change-in-ranking plot was modified from a function described on [**this Stack Overflow forum**](https://stackoverflow.com/questions/25781284/simplest-way-to-plot-changes-in-ranking-between-two-ordered-lists-in-r). Number of job postings were also tabulated by month and year to determine if there were any changes in frequency of postings over time.
+Exploratory data analysis was conducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.  Hex maps were generated to view the distribution of the number of jobs posted by geographic location. To visualize the changes in the top ten tags, areas of study, and job locations over the last five years, code to generate a change-in-ranking plot was modified from a function described on [**this Stack Overflow forum**](https://stackoverflow.com/questions/25781284/simplest-way-to-plot-changes-in-ranking-between-two-ordered-lists-in-r). Number of job postings were also tabulated by year and geographic region to determine if there were any changes in frequency of postings by region over time.
 
 ### Statistical Analysis
 In order to assess any differences in jobs by location, proportions of jobs that offer visa sponsorship, allow remote work, and assist with relocation were compared between jobs listed in the US and Europe, the two geographic regions with the highest numbers of job listings, using two-sample t-tests.  The distributions of highest degree preferred were compared across regions with a Pearson's Chi-squared test.
@@ -324,15 +324,16 @@ plot_grid(top_row,bottom_row,ncol=1)
 ```
 
 #### Figure 2: Number of Job Listings by Year and Geographic Region
-```{r number of jobs by region and year, echo=FALSE, warning=FALSE,message=FALSE,fig.align='center',fig.height=3,fig.width=4}
+```{r number of jobs by region and year, echo=FALSE, warning=FALSE,message=FALSE,fig.align='center',fig.height=3,fig.width=6}
 region_year_dat = stackjobs %>% 
   mutate(Region = ifelse(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB"), "Europe",ifelse(CountryCode == "US","USA","Other"))) %>% 
   group_by(Region,year) %>% 
-  count() %>% 
-  filter(year > 2012)
+  count() #%>% 
+  #filter(year > 2012)
 
-ggplot(region_year_dat, aes(rev(year),n,fill=Region)) + geom_col() + coord_flip() +
-  labs(y="Count",x="")+scale_x_discrete(labels=rev(names(table(region_year_dat$year))))+theme(axis.title.x=element_text(size=11),
+ggplot(region_year_dat, aes((year),n,fill=Region)) + geom_col() + #coord_flip() +
+  labs(y="Count",x="")+#scale_x_discrete(labels=rev(names(table(region_year_dat$year))))+
+  theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
                axis.text.y = element_text(size=10),
