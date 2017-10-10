@@ -231,6 +231,57 @@ jitter_latlong <- Vectorize(jitter_latlong,
                             vectorize.args = c("coord", "latitude"))
 ```
 
+```{r plot ranks, echo=FALSE}
+plotRanks <- function(a, b,c,d,e, labels.offset=0.1, arrow.len=0.1)
+  {
+  old.par <- par(mar=c(1,1,1,1))
+
+  # Find the length of the vectors
+  len.1 <- length(a)
+  len.2 <- length(b)
+  len.3 <- length(c)
+  len.4 <- length(d)
+  len.5 <- length(e)
+
+  # Plot two columns of equidistant points
+  plot(rep(1, len.1), 1:len.1, type='n',# cex=0.8, 
+       xlim=c(0, 20), ylim=c(0, max(len.1, len.2,len.3,len.4,len.5)+1),
+       axes=F, xlab="", ylab="") # Remove axes and labels
+#  points(rep(5, len.2), 1:len.2, pch=20, cex=0.8)
+#  points(rep(9, len.3), 1:len.3, pch=20, cex=0.8)
+#  points(rep(13, len.4), 1:len.4, pch=20, cex=0.8)
+#  points(rep(17, len.5), 1:len.5, pch=20, cex=0.8)
+
+  # Put labels next to each observation
+  text(c(1,5,9,13,17), rep(max(len.1)+1,5), c(expression(underline(bold("2013"))),expression(underline(bold("2014"))),expression(underline(bold("2015"))),expression(underline(bold("2016"))),expression(underline(bold("2017")))))
+  text(rep(1, len.1), 1:len.1, rev(a))
+  text(rep(5, len.2), 1:len.2, rev(b))
+  text(rep(9, len.3), 1:len.3, rev(c))
+  text(rep(13, len.4), 1:len.4, rev(d))
+  text(rep(17, len.5), 1:len.5, rev(e))
+
+    # Now we need to map where the elements of a are in b
+  # We use the match function for this job
+  a.to.b <- match(rev(a), rev(b))
+  b.to.c <- match(rev(b), rev(c))
+  c.to.d <- match(rev(c), rev(d))
+  d.to.e <- match(rev(d), rev(e))
+
+  # Now we can draw arrows from the first column to the second
+  arrows(rep(2.25,len.1), 1:len.1, rep(3.75, len.2), a.to.b, 
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - a.to.b > 0, "red","green"))
+  arrows(rep(6.25, len.1), 1:len.1, rep(7.75, len.2), b.to.c, 
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - b.to.c > 0, "red","green"))
+  arrows(rep(10.25, len.1), 1:len.1, rep(11.75, len.2), c.to.d, 
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - c.to.d > 0, "red","green"))
+  arrows(rep(14.25, len.1), 1:len.1, rep(15.75, len.2), d.to.e, 
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - d.to.e > 0, "red","green"))
+  
+  par(old.par)
+}
+
+```
+
 ```{r popular majors, echo=FALSE, results='tex',eval=FALSE}
 pop_majors = data.frame(sort(table(unlist(stackjobs$majors)),decreasing=TRUE))
 names(pop_majors) = c("Major","n")
@@ -401,7 +452,7 @@ kable_styling(latex_options=c("striped","hold_position")) %>% add_footnote(paste
 
 ### Changes in Attributes of Job Listings over the Last 5 Years (2013-2017):
 
-```{r trends over time,echo=FALSE,results='tex'}
+```{r trends over time,echo=FALSE,results='tex',fig.align='center',fig.height=7,fig.width=9.5}
 tag_yr <- function(yr){
   toptags = stackjobs %>% 
     filter(year == yr) %>% 
@@ -424,7 +475,8 @@ tag_trend = sapply(2013:2017,tag_yr)
 colnames(tag_trend) = 2013:2017
 row.names(tag_trend) = 1:10
 
-kable(tag_trend,format = "latex", booktabs = T,caption="Top 10 Tags in Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position"))
+
+#kable(tag_trend,format = "latex", booktabs = T,caption="Top 10 Tags in Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position"))
 
 major_yr <- function(yr){
   stackjobs %>% 
@@ -463,32 +515,16 @@ city_yr <- function(yr){
   cities[,1]
 }
 
-city_yr2 <- function(yr){
- cities = stackjobs %>%
-    filter(year == yr) %>% 
-    .$LocationString %>% 
-    unlist() %>% 
-    data.frame(locations=.,stringsAsFactors=FALSE) %>% 
-    group_by(locations) %>% 
-    count() %>% 
-    arrange(desc(n)) %>% 
-    filter(!is.na(locations)) %>% 
-    head(n=10) %>% 
-    ungroup %>% 
-    mutate(City = str_split(locations,", ",simplify=TRUE)[,1],
-           n = paste0(n," (",round(n/sum(n) * 100,1),"%)")) %>% 
-    select(City,n) %>% 
-    as.data.frame()
- colnames(cities)[2] = "n (%)"
- cities
-}
-
 city_trend = sapply(2013:2017,city_yr)
 colnames(city_trend) = 2013:2017
 row.names(city_trend) = 1:10
 
-kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) #%>% landscape()
+par(mfrow=c(3,1))
+plotRanks(tag_trend[,1],tag_trend[,2],tag_trend[,3],tag_trend[,4],tag_trend[,5])
+plotRanks(major_trend[,1],major_trend[,2],major_trend[,3],major_trend[,4],major_trend[,5])
+plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend[,5])
 
+#kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) %>% landscape()
 ```
 
 \clearpage
