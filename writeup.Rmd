@@ -547,7 +547,6 @@ plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend
 
 Discussion:
 
-
 Limitations:
 
 - results do not generalize to all data science job boards - Stack Overflow could attract jobs from particular industries, or in particular cities, and could be biased in this way
