@@ -261,7 +261,7 @@ plotRanks <- function(a, b,c,d,e, title.text,arrow.len=.1)
 }
 
 ```
-The top three computing skills listed as tags on job listings are `Python`, `R` and `SQL` (Figure 1a).  Of the 995 jobs listed, 448 jobs (`r paste0(round(448/995 * 100,1),"%")`) use the `Python` tag, 281 jobs (`r paste0(round(281/995 * 100,1),"%")`) use the `R` tag and 249 jobs (`r paste0(round(249/995 * 100,1),"%")`) use the `SQL` tag.  Employers' focus on coding abilities are also highlighed in the top three preferred areas of study for data science job candidates (Figure 1b): Computer Science (n = 469, `r paste0(round(469/995 * 100,1),"%")`), Statistics (n = 436,  `r paste0(round(436/995 * 100,1),"%")`) and Engineering (n = 301, `r paste0(round(301/995 * 100,1),"%")`).  Figures 1c and 3 suggest that most data science jobs are located in big cities, led by tech hubs New York, NY and San Francisco, CA.  Several European cities (London, Berlin, and Amsterdam), are represented in the top ten cities for data science jobs as well.  Also, as the number of data science job listings has increased over time, so too has the proportion of jobs that are located in Europe (Figure 2).
+The top three computing skills listed as tags on job listings are `Python`, `R` and `SQL` (Figure 1a).  Of the 995 jobs listed, 448 jobs (`r paste0(round(448/995 * 100,1),"%")`) use the `Python` tag, 281 jobs (`r paste0(round(281/995 * 100,1),"%")`) use the `R` tag and 249 jobs (`r paste0(round(249/995 * 100,1),"%")`) use the `SQL` tag.  Employers' focus on coding abilities are also highlighted in the top three preferred areas of study for data science job candidates (Figure 1b): Computer Science (n = 469, `r paste0(round(469/995 * 100,1),"%")`), Statistics (n = 436,  `r paste0(round(436/995 * 100,1),"%")`) and Engineering (n = 301, `r paste0(round(301/995 * 100,1),"%")`).  Figures 1c and 3 suggest that most data science jobs are located in big cities, led by tech hubs New York, NY and San Francisco, CA.  Several European cities (London, Berlin, and Amsterdam), are represented in the top ten cities for data science jobs as well.  Also, as the number of data science job listings has increased over time, so too has the proportion of jobs that are located in Europe (Figure 2).
 
 Differences between jobs listed in the United States and jobs listed in Europe are described in Table 1.  European employers are more likely to offer visa sponsorship (EU: 20.8%, USA: 5.9%, p < .01) and to offer assistance with relocation (EU: 35.5%, USA: 26.6%, p < .01) than US employers.  US employers are more likely to allow employees to work remotely (USA: 9.2%, EU: 2.8%, p < .01) and offer more jobs for candidates with Bachelor's Degrees only (p < .01) than European employers.
 
@@ -529,10 +529,8 @@ plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend
 
 Discussion:
 
-- More quantitative fields dominate top areas of study requested
 - While Python has consistently been most tagged skill, R and machine learning have become increasingly more important to data science jobs in the last three years (as they move up the rankings)
 - Most US jobs are in big cities like New York, San Francisco, Boston, and Chicago.  While most jobs overall are located in the US, in the last two years, European cities have been becoming increasingly more popular.
-- There are significant differences between US and European jobs: US allows more remore work, and more jobs for people with Bachelors degrees, while European jobs sponsor more visas and offer more compensation for relocation.
 
 Limitations:
 
