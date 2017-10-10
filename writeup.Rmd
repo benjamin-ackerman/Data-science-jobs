@@ -200,7 +200,7 @@ Data were made privately available upon request from David Robinson, a Data Scie
 While a fair amount of variables were already provided in a dataframe, additional information was extracted from the data and cleaned.  The `geocode` function in the `ggmap` package was used to gather latitude and longitude coordinates for each job location. Preferences of academic backgrounds were extracted from the job requirements section.  This included any mentions of type of degree (Bachelors, Masters, PhD) along with mentions of favorable majors and departments.  To detect relevant majors, a dictionary was compiled using a comprehensive list of STEM fields provided by [**Stemdegreelist.com**](http://stemdegreelist.com/stem-degree-list/).  Additionally, for jobs that mentioned multiple degrees (i.e, "Bachelor's degree required, Master's degree preferred"), the "highest degree preferred" for a job listing was determined.  For listings that did not provide job requirement sections, the job descriptions section was used to check for these attributes.
 
 ### Exploratory Data Analysis
-Exploratory data analysis was conducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.  Hex maps were generated to view the distribution of the number of jobs posted by geographic location.  Number of job postings were also tabulated by month and year to determine if there were any changes in frequency of postings over time.
+Exploratory data analysis was conducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.  Hex maps were generated to view the distribution of the number of jobs posted by geographic location. To visualize the changes in the top ten tags, areas of study, and job locations over the last five years, code to generate a change-in-ranking plot was modified from a function described on [**this Stack Overflow forum**](https://stackoverflow.com/questions/25781284/simplest-way-to-plot-changes-in-ranking-between-two-ordered-lists-in-r). Number of job postings were also tabulated by month and year to determine if there were any changes in frequency of postings over time.
 
 ### Statistical Analysis
 In order to assess any differences in jobs by location, proportions of jobs that offer visa sponsorship, allow remote work, and assist with relocation were compared between jobs listed in the US and Europe, the two geographic regions with the highest numbers of job listings, using two-sample t-tests.  The distributions of highest degree preferred were compared across regions with a Pearson's Chi-squared test.
@@ -289,7 +289,7 @@ names(pop_majors) = c("Major","n")
 kable(pop_majors[1:10,],caption="10 most common majors listed in job postings")
 ```
 
-### Most Popular Attributes of Job Listings from 2010-2017:
+### Figure 1: Most Popular Attributes of Job Listings
 
 ```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
 toptags = stackjobs %>% 
@@ -340,10 +340,29 @@ locations = ggplot(toplocations[1:10,], aes(reorder(locations,n),n)) + geom_col(
                axis.text.x = element_text(size=10),
                axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
 
-top_row = plot_grid(tags,majors, labels = c("Top 10 Tags in Job Listings","Top 10 Areas of Study in Job Listings",""),scale = 0.9,hjust=-.15,label_size=12)
-bottom_row = plot_grid(locations,labels=c("Top 10 Cities with the Most Job Listings"),scale=.9,hjust=-.35,label_size=12)
+top_row = plot_grid(tags,majors, labels = c("(a) Top 10 Tags in Job Listings","(b) Top 10 Areas of Study in Job Listings",""),scale = 0.9,hjust=-.15,label_size=10)
+bottom_row = plot_grid(locations,labels=c("(c) Top 10 Cities with the Most Job Listings"),scale=.9,hjust=-.35,label_size=10)
 plot_grid(top_row,bottom_row,ncol=1)
 ```
+
+### Figure 2: Number of Job Listings by Year and Geographic Region
+```{r number of jobs by region and year, echo=FALSE, warning=FALSE,message=FALSE,fig.align='center',fig.height=3,fig.width=4}
+region_year_dat = stackjobs %>% 
+  mutate(Region = ifelse(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB"), "Europe",ifelse(CountryCode == "US","USA","Other"))) %>% 
+  group_by(Region,year) %>% 
+  count() %>% 
+  filter(year > 2012)
+
+ggplot(region_year_dat, aes(rev(year),n,fill=Region)) + geom_col() + coord_flip() +
+  labs(y="Count",x="")+scale_x_discrete(labels=rev(names(table(region_year_dat$year))))+theme(axis.title.x=element_text(size=11),
+               axis.title.y=element_text(size=11),
+               axis.text.x = element_text(size=10),
+               axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
+
+```
+
+
+### Figure 3: Geographic Distribution of Jobs in the USA vs. Europe
 
 ```{r plot US and EU maps,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=4,fig.width=10}
 mapdat_us = stackjobs %>%
@@ -400,7 +419,7 @@ europe=ggplot()+borders(database="world",xlim=c(-10,25),ylim=c(40,70))+geom_hex(
                legend.title=element_text(size=10),
                legend.text=element_text(size=10))
 
-plot_grid(us,europe, labels = c(paste0("USA (n=",nrow(mapdat_us),")"), paste0("Europe (n=",nrow(mapdat_eu),")")), align = "v")
+plot_grid(us,europe, labels = c(paste0("(a) USA (n=",nrow(mapdat_us),")"), paste0("(b) Europe (n=",nrow(mapdat_eu),")")), align = "v", label_size=12)
 ```
 
 
@@ -445,13 +464,13 @@ colnames(diff_tab) = c("USA","Europe","P-value")
 row.names(diff_tab) = c("Visa Sponsorship","Allows Remote Work", "Offers Relocation", "Bachelors","Masters","PhD")
 
 # Print the table
-kable(diff_tab, format = "latex", booktabs = T,caption="Differences in Job Listings in the USA vs. Europe") %>%group_rows("Highest Degree Preferred:[note]", 4, 6) %>% 
+kable(diff_tab, format = "latex", booktabs = T,caption="Differences between Job Listings in the USA vs. Europe") %>%group_rows("Highest Degree Preferred:[note]", 4, 6) %>% 
 kable_styling(latex_options=c("striped","hold_position")) %>% add_footnote(paste0("Due to missingness, percents are calculated from totals of ",missing[1]," for USA and ",missing[2]," for Europe."), notation = "number")
 
 # model = glm(region == "USA" ~ OffersVisaSponsorship + AllowsRemote +  highest_degree,family='binomial',data=diff_analysis)
 ```
 
-### Changes in Attributes of Job Listings over the Last 5 Years (2013-2017):
+### Figure 4: Changes in Job Listing Attributes over the Last Five Years
 
 ```{r trends over time,echo=FALSE,results='tex',fig.align='center',fig.height=7,fig.width=9.5}
 tag_yr <- function(yr){
@@ -521,9 +540,9 @@ colnames(city_trend) = 2013:2017
 row.names(city_trend) = 1:10
 
 par(mfrow=c(3,1))
-plotRanks(tag_trend[,1],tag_trend[,2],tag_trend[,3],tag_trend[,4],tag_trend[,5],"Top 10 Tags")
-plotRanks(major_trend[,1],major_trend[,2],major_trend[,3],major_trend[,4],major_trend[,5],"Top 10 Areas of Study")
-plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend[,5],"Top 10 Cities")
+plotRanks(tag_trend[,1],tag_trend[,2],tag_trend[,3],tag_trend[,4],tag_trend[,5],"(a) Top 10 Tags by Year")
+plotRanks(major_trend[,1],major_trend[,2],major_trend[,3],major_trend[,4],major_trend[,5],"(b) Top 10 Areas of Study by Year")
+plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend[,5],"(c) Top 10 Cities by Year")
 
 #kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) %>% landscape()
 ```
