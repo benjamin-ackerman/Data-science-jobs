@@ -210,28 +210,7 @@ In order to assess any differences in jobs by location, proportions of jobs that
 stackjobs = readRDS("../stackjobs.rds")
 ```
 
-```{r jitter latitude and longitude functions,echo=FALSE}
-length_of_degree <- function(degree, type = c("lat", "long")) {
-  type <- match.arg(type)
-  length_at_equator <- 110.5742727 # in kilometers
-  if (type == "long") {
-    cos(degree * (2 * pi) / 360) * length_at_equator
-  } else if (type == "lat") {
-    length_at_equator
-  }
-}
-jitter_latlong <- function(coord, type = c("lat", "long"), latitude, km = 1) {
-  type = match.arg(type)
-  if(missing(latitude) & type == "lat") latitude <- coord
-  km_per_degree <- length_of_degree(latitude, type = type)
-  degree_per_km <- 1 / km_per_degree
-  coord + (runif(1, min = -1, max = 1) * degree_per_km * km)
-}
-jitter_latlong <- Vectorize(jitter_latlong,
-                            vectorize.args = c("coord", "latitude"))
-```
-
-```{r plot ranks, echo=FALSE}
+```{r plot ranks function, echo=FALSE}
 plotRanks <- function(a, b,c,d,e, title.text,arrow.len=.1)
   {
   old.par <- par(mar=c(1,1,1,1))
@@ -282,14 +261,11 @@ plotRanks <- function(a, b,c,d,e, title.text,arrow.len=.1)
 }
 
 ```
+The top three computing skills listed as tags on job listings are `Python`, `R` and `SQL` (Figure 1a).  Of the 995 jobs listed, 448 jobs (`r paste0(round(448/995 * 100,1),"%")`) use the `Python` tag, 281 jobs (`r paste0(round(281/995 * 100,1),"%")`) use the `R` tag and 249 jobs (`r paste0(round(249/995 * 100,1),"%")`) use the `SQL` tag.  Employers' focus on coding abilities are also highlighed in the top three preferred areas of study for data science job candidates (Figure 1b): Computer Science (n = 469, `r paste0(round(469/995 * 100,1),"%")`), Statistics (n = 436,  `r paste0(round(436/995 * 100,1),"%")`) and Engineering (n = 301, `r paste0(round(301/995 * 100,1),"%")`).  Figures 1c and 3 suggest that most data science jobs are located in big cities, led by tech hubs New York, NY and San Francisco, CA.  Several European cities (London, Berlin, and Amsterdam), are represented in the top ten cities for data science jobs as well.  Also, as the number of data science job listings has increased over time, so too has the proportion of jobs that are located in Europe (Figure 2).
 
-```{r popular majors, echo=FALSE, results='tex',eval=FALSE}
-pop_majors = data.frame(sort(table(unlist(stackjobs$majors)),decreasing=TRUE))
-names(pop_majors) = c("Major","n")
-kable(pop_majors[1:10,],caption="10 most common majors listed in job postings")
-```
+Differences between jobs listed in the United States and jobs listed in Europe are described in Table 1.  European employers are more likely to offer visa sponsorship (EU: 20.8%, USA: 5.9%, p < .01) and to offer assistance with relocation (EU: 35.5%, USA: 26.6%, p < .01) than US employers.  US employers are more likely to allow employees to work remotely (USA: 9.2%, EU: 2.8%, p < .01) and offer more jobs for candidates with Bachelor's Degrees only (p < .01) than European employers.
 
-### Figure 1: Most Popular Attributes of Job Listings
+#### Figure 1: Most Popular Attributes of Job Listings
 
 ```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
 toptags = stackjobs %>% 
@@ -324,8 +300,6 @@ majors = ggplot(topmajors[1:10,], aes(reorder(majors,n),n)) + geom_col() + coord
                axis.text.x = element_text(size=10),
                axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
 
-#cowplot::plot_grid(tags,majors, labels = c("Top 10 Tags in Job Listings","Top 10 Areas of Study in Job Listings"), align = "v",scale = 0.9,hjust=-.25)
-
 toplocations = stackjobs %>% 
   .$LocationString %>% 
   unlist() %>% 
@@ -345,7 +319,7 @@ bottom_row = plot_grid(locations,labels=c("(c) Top 10 Cities with the Most Job L
 plot_grid(top_row,bottom_row,ncol=1)
 ```
 
-### Figure 2: Number of Job Listings by Year and Geographic Region
+#### Figure 2: Number of Job Listings by Year and Geographic Region
 ```{r number of jobs by region and year, echo=FALSE, warning=FALSE,message=FALSE,fig.align='center',fig.height=3,fig.width=4}
 region_year_dat = stackjobs %>% 
   mutate(Region = ifelse(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB"), "Europe",ifelse(CountryCode == "US","USA","Other"))) %>% 
@@ -357,7 +331,9 @@ ggplot(region_year_dat, aes(rev(year),n,fill=Region)) + geom_col() + coord_flip(
   labs(y="Count",x="")+scale_x_discrete(labels=rev(names(table(region_year_dat$year))))+theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
-               axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
+               axis.text.y = element_text(size=10),
+               legend.text=element_text(size=9),
+               legend.title=element_text(size=9))+scale_y_continuous(expand=c(0,0))
 
 ```
 
@@ -470,7 +446,7 @@ kable_styling(latex_options=c("striped","hold_position")) %>% add_footnote(paste
 # model = glm(region == "USA" ~ OffersVisaSponsorship + AllowsRemote +  highest_degree,family='binomial',data=diff_analysis)
 ```
 
-### Figure 4: Changes in Job Listing Attributes over the Last Five Years
+#### Figure 4: Changes in Job Listing Attributes over the Last Five Years
 
 ```{r trends over time,echo=FALSE,results='tex',fig.align='center',fig.height=7,fig.width=9.5}
 tag_yr <- function(yr){
@@ -562,5 +538,6 @@ Limitations:
 
 - results do not generalize to all data science job boards - Stack Overflow could attract jobs from particular industries, could be biased in this way
 - skills are detected through tags and not through what is mentioned in the text
+- estimates for 2017 jobs are only through September 25, 2017, and may change once the year is complete.
 
 ## Conclusion
