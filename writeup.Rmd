@@ -265,6 +265,10 @@ The top three computing skills listed as tags on job listings are `Python`, `R` 
 
 Differences between jobs listed in the United States and jobs listed in Europe are described in Table 1.  European employers are more likely to offer visa sponsorship (EU: 20.8%, USA: 5.9%, p < .01) and to offer assistance with relocation (EU: 35.5%, USA: 26.6%, p < .01) than US employers.  US employers are more likely to allow employees to work remotely (USA: 9.2%, EU: 2.8%, p < .01) and offer more jobs for candidates with Bachelor's Degrees only (p < .01) than European employers.
 
+- While Python has consistently been most tagged skill, R and machine learning have become increasingly more important to data science jobs in the last three years (as they move up the rankings)
+- No major changes in top areas of study over time
+- Most US jobs are in big cities like New York, San Francisco, Boston, and Chicago.  While most jobs overall are located in the US, in the last two years, European cities have been becoming increasingly more popular. Biggest changes in top cities has happened between 2016 and 2017 as seen in the length of the arrows - more European cities are rising to the top while US cities are falling.
+
 #### Figure 1: Most Popular Attributes of Job Listings
 
 ```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
@@ -462,7 +466,7 @@ tag_yr <- function(yr){
     count() %>% 
     arrange(desc(n)) %>% 
     filter(!is.na(tags)) %>% 
-    filter(!tags %in% c("statistics","bigdata","javascript","data science")) %>% 
+    filter(!tags %in% c("statistics","bigdata","javascript","data science","data","analytics","algorithm")) %>% 
     head(n=10) %>% 
     .$tags
 }
@@ -523,14 +527,10 @@ plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend
 #kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) %>% landscape()
 ```
 
-\clearpage
-
 ## Discussion/Limitations
 
 Discussion:
 
-- While Python has consistently been most tagged skill, R and machine learning have become increasingly more important to data science jobs in the last three years (as they move up the rankings)
-- Most US jobs are in big cities like New York, San Francisco, Boston, and Chicago.  While most jobs overall are located in the US, in the last two years, European cities have been becoming increasingly more popular.
 
 Limitations:
 
