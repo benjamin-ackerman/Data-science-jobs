@@ -232,7 +232,7 @@ jitter_latlong <- Vectorize(jitter_latlong,
 ```
 
 ```{r plot ranks, echo=FALSE}
-plotRanks <- function(a, b,c,d,e, labels.offset=0.1, arrow.len=0.1)
+plotRanks <- function(a, b,c,d,e, title.text,arrow.len=.1)
   {
   old.par <- par(mar=c(1,1,1,1))
 
@@ -245,13 +245,14 @@ plotRanks <- function(a, b,c,d,e, labels.offset=0.1, arrow.len=0.1)
 
   # Plot two columns of equidistant points
   plot(rep(1, len.1), 1:len.1, type='n',# cex=0.8, 
-       xlim=c(0, 20), ylim=c(0, max(len.1, len.2,len.3,len.4,len.5)+1),
+       xlim=c(0, 20), ylim=c(0, max(len.1, len.2,len.3,len.4,len.5)+1.3),
        axes=F, xlab="", ylab="") # Remove axes and labels
 #  points(rep(5, len.2), 1:len.2, pch=20, cex=0.8)
 #  points(rep(9, len.3), 1:len.3, pch=20, cex=0.8)
 #  points(rep(13, len.4), 1:len.4, pch=20, cex=0.8)
 #  points(rep(17, len.5), 1:len.5, pch=20, cex=0.8)
-
+  title(title.text,adj=0)
+  
   # Put labels next to each observation
   text(c(1,5,9,13,17), rep(max(len.1)+1,5), c(expression(underline(bold("2013"))),expression(underline(bold("2014"))),expression(underline(bold("2015"))),expression(underline(bold("2016"))),expression(underline(bold("2017")))))
   text(rep(1, len.1), 1:len.1, rev(a))
@@ -520,9 +521,9 @@ colnames(city_trend) = 2013:2017
 row.names(city_trend) = 1:10
 
 par(mfrow=c(3,1))
-plotRanks(tag_trend[,1],tag_trend[,2],tag_trend[,3],tag_trend[,4],tag_trend[,5])
-plotRanks(major_trend[,1],major_trend[,2],major_trend[,3],major_trend[,4],major_trend[,5])
-plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend[,5])
+plotRanks(tag_trend[,1],tag_trend[,2],tag_trend[,3],tag_trend[,4],tag_trend[,5],"Top 10 Tags")
+plotRanks(major_trend[,1],major_trend[,2],major_trend[,3],major_trend[,4],major_trend[,5],"Top 10 Areas of Study")
+plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend[,5],"Top 10 Cities")
 
 #kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) %>% landscape()
 ```
