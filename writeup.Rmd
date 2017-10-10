@@ -249,13 +249,13 @@ plotRanks <- function(a, b,c,d,e, title.text,arrow.len=.1)
 
   # Now we can draw arrows from the first column to the second
   arrows(rep(2.25,len.1), 1:len.1, rep(3.75, len.2), a.to.b, 
-         length=arrow.len, angle=20,col=ifelse(1:len.1 - a.to.b > 0, "red","green"))
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - a.to.b == 0,"grey",ifelse(1:len.1 - a.to.b > 0, "red","green")))
   arrows(rep(6.25, len.1), 1:len.1, rep(7.75, len.2), b.to.c, 
-         length=arrow.len, angle=20,col=ifelse(1:len.1 - b.to.c > 0, "red","green"))
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - b.to.c == 0,"grey",ifelse(1:len.1 - b.to.c > 0, "red","green")))
   arrows(rep(10.25, len.1), 1:len.1, rep(11.75, len.2), c.to.d, 
-         length=arrow.len, angle=20,col=ifelse(1:len.1 - c.to.d > 0, "red","green"))
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - c.to.d == 0,"grey",ifelse(1:len.1 - c.to.d > 0, "red","green")))
   arrows(rep(14.25, len.1), 1:len.1, rep(15.75, len.2), d.to.e, 
-         length=arrow.len, angle=20,col=ifelse(1:len.1 - d.to.e > 0, "red","green"))
+         length=arrow.len, angle=20,col=ifelse(1:len.1 - d.to.e == 0,"grey",ifelse(1:len.1 - d.to.e > 0, "red","green")))
   
   par(old.par)
 }
