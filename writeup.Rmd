@@ -1,7 +1,7 @@
 ---
 title: "Trends in Data Science Job Postings on Stack Overflow"
 author: "Benjamin Ackerman"
-date: "October 9, 2017"
+date: "October 10, 2017"
 mainfont: Times New Roman
 output: 
   pdf_document:
@@ -11,7 +11,17 @@ geometry: margin=1in
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE,message=FALSE,results='hide'}
-packages = c("devtools","qdapRegex","knitr","dplyr","kableExtra","ggmap","leaflet","stringr","tidyr","tm","SnowballC","wordcloud","RColorBrewer","rebus","maps","grid","cowplot","RgoogleMaps","ggplot2")
+packages = c("devtools","qdapRegex","knitr","dplyr","kableExtra","ggmap","stringr","tidyr","rebus","maps","grid","cowplot","ggplot2")
+
+check.packages = function(package){
+  if(!package %in% library()$results[,1]){install.packages(package,dependencies=TRUE)}
+  else{("already installed")}
+}
+
+# Install packages that are not already installed
+sapply(packages,check.packages)
+
+# Load all necessary packages
 lapply(packages,library,character.only=TRUE)
 ```
 
