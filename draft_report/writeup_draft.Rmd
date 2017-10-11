@@ -13,13 +13,13 @@ geometry: margin=1in
 ```{r setup, echo=FALSE, warning=FALSE,message=FALSE,results='hide'}
 packages = c("devtools","qdapRegex","knitr","dplyr","kableExtra","ggmap","stringr","tidyr","rebus","maps","grid","cowplot","ggplot2")
 
-check.packages = function(package){
+# check.packages = function(package){
   if(!package %in% library()$results[,1]){install.packages(package,dependencies=TRUE)}
   else{("already installed")}
 }
 
 # Install packages that are not already installed
-sapply(packages,check.packages)
+# sapply(packages,check.packages)
 
 # Load all necessary packages
 lapply(packages,library,character.only=TRUE)
