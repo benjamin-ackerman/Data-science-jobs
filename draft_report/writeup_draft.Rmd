@@ -1,7 +1,7 @@
 ---
 title: "Trends in Data Science Job Postings on Stack Overflow"
 author: "Benjamin Ackerman"
-date: "October 10, 2017"
+date: "October 11, 2017"
 mainfont: Times New Roman
 output: 
   pdf_document:
@@ -13,13 +13,13 @@ geometry: margin=1in
 ```{r setup, echo=FALSE, warning=FALSE,message=FALSE,results='hide'}
 packages = c("devtools","qdapRegex","knitr","dplyr","kableExtra","ggmap","stringr","tidyr","rebus","maps","grid","cowplot","ggplot2")
 
-# check.packages = function(package){
-  if(!package %in% library()$results[,1]){install.packages(package,dependencies=TRUE)}
-  else{("already installed")}
-}
+#check.packages = function(package){
+#  if(!package %in% library()$results[,1]){install.packages(package,dependencies=TRUE)}
+#  else{("already installed")}
+#}
 
 # Install packages that are not already installed
-# sapply(packages,check.packages)
+#sapply(packages,check.packages)
 
 # Load all necessary packages
 lapply(packages,library,character.only=TRUE)
@@ -209,15 +209,18 @@ saveRDS(newdat,"../stackjobs.rds")
 The purpose of this paper is to examine trends in job postings for "data scientists" on the Stack Overflow job board.  This involves determining the most common computing skills that employers look for, along with their preferences of degree types and areas of study.  This paper will also locate geographic regions where data science jobs are in highest demand, and if there are substantial differences in job characteristics by location.  Finally, trends of these characteristics of job listings will be explored over time.
 
 ## Methods
-### Data Collection
+**Data Collection**
+
 Data were made privately available upon request from David Robinson, a Data Scientist at Stack Overflow.  The provided data consist of information from jobs posted on the Stack Overflow job board that either have "data scientist" or "data analyst" in their title between August 25, 2010 and September 25, 2017.  While company names were censored from the data, the following attributes of each posting were provided in a data frame: job title, original posting date (YEAR-MM-DD), associated tags indicating relevant skills, job location (City, State, Country), salary (when included), and the full text of job descriptions and requirements.
 
 While a fair amount of variables were already provided in a dataframe, additional information was extracted from the data and cleaned.  The `geocode` function in the `ggmap` package was used to gather latitude and longitude coordinates for each job location. Preferences of academic backgrounds were extracted from the job requirements section.  This included any mentions of type of degree (Bachelors, Masters, PhD) along with mentions of favorable majors and departments.  To detect relevant majors, a dictionary was compiled using a comprehensive list of STEM fields provided by [**Stemdegreelist.com**](http://stemdegreelist.com/stem-degree-list/).  Additionally, for jobs that mentioned multiple degrees (i.e, "Bachelor's degree required, Master's degree preferred"), the "highest degree preferred" for a job listing was determined.  For listings that did not provide job requirement sections, the job descriptions section was used to check for these attributes.
 
-### Exploratory Data Analysis
-Exploratory data analysis was conducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.  Hex maps were generated to view the distribution of the number of jobs posted by geographic location. To visualize the changes in the top ten tags, areas of study, and job locations over the last five years, code to generate a change-in-ranking plot was modified from a function described on [**this Stack Overflow forum**](https://stackoverflow.com/questions/25781284/simplest-way-to-plot-changes-in-ranking-between-two-ordered-lists-in-r). Number of job postings were also tabulated by year and geographic region to determine if there were any changes in frequency of postings by region over time.
+**Exploratory Data Analysis**
 
-### Statistical Analysis
+Exploratory data analysis wasconducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.  Hex maps were generated to view the distribution of the number of jobs posted by geographic location. To visualize the changes in the top ten tags, areas of study, and job locations over the last five years, code to generate a change-in-ranking plot was modified from a function described on [**this Stack Overflow forum**](https://stackoverflow.com/questions/25781284/simplest-way-to-plot-changes-in-ranking-between-two-ordered-lists-in-r). Number of job postings were also tabulated by year and geographic region to determine if there were any changes in frequency of postings by region over time.
+
+**Statistical Analysis**
+
 In order to assess any differences in jobs by location, proportions of jobs that offer visa sponsorship, allow remote work, and assist with relocation were compared between jobs listed in the US and Europe, the two geographic regions with the highest numbers of job listings, using two-sample t-tests.  The distributions of highest degree preferred were compared across regions with a Pearson's Chi-squared test.
 
 ## Results
@@ -276,16 +279,31 @@ plotRanks <- function(a, b,c,d,e, title.text,arrow.len=.1)
 }
 
 ```
-The top three computing skills listed as tags on job listings are `Python`, `R` and `SQL` (Figure 1a).  Of the 995 jobs listed, 448 jobs (`r paste0(round(448/995 * 100,1),"%")`) use the `Python` tag, 281 jobs (`r paste0(round(281/995 * 100,1),"%")`) use the `R` tag and 249 jobs (`r paste0(round(249/995 * 100,1),"%")`) use the `SQL` tag.  Employers' focus on coding abilities are also highlighted in the top three preferred areas of study for data science job candidates (Figure 1b): Computer Science (n = 469, `r paste0(round(469/995 * 100,1),"%")`), Statistics (n = 436,  `r paste0(round(436/995 * 100,1),"%")`) and Engineering (n = 301, `r paste0(round(301/995 * 100,1),"%")`).  Figures 1c and 3 suggest that most data science jobs are located in big cities, led by tech hubs New York, NY and San Francisco, CA.  Several European cities (London, Berlin, and Amsterdam), are represented in the top ten cities for data science jobs as well.  Also, as the number of data science job listings has increased over time, so too has the proportion of jobs that are located in Europe (Figure 2).
 
-Differences between jobs listed in the United States and jobs listed in Europe are described in Table 1.  European employers are more likely to offer visa sponsorship (EU: 20.8%, USA: 5.9%, p < .01) and to offer assistance with relocation (EU: 35.5%, USA: 26.6%, p < .01) than US employers.  US employers are more likely to allow employees to work remotely (USA: 9.2%, EU: 2.8%, p < .01) and offer more jobs for candidates with Bachelor's Degrees only (p < .01) than European employers.
+The number of yearly data science job listings posted on Stack Overflow has increased over time, most notably more than doubling between 2013 (n=75) and 2014 (n=174) (Figure 2).  Figure 1 displays the overall top ten skill tags, areas of study, and cities, while Figure 4 contains the top ten lists by year, and depicts how the rankings have changed over time.  Differences between jobs listed in the United States and jobs listed in Europe are described in Table 1, and the geographic distributions of jobs in both regions are portrayed in Figure 3.  
 
-- While Python has consistently been most tagged skill, R and machine learning have become increasingly more important to data science jobs in the last three years (as they move up the rankings)
-- No major changes in top areas of study over time
-- Most US jobs are in big cities like New York, San Francisco, Boston, and Chicago.  While most jobs overall are located in the US, in the last two years, European cities have been becoming increasingly more popular. Biggest changes in top cities has happened between 2016 and 2017 as seen in the length of the arrows - more European cities are rising to the top while US cities are falling.
+**Skill Tags**
 
-#### Figure 1: Most Popular Attributes of Job Listings
+The top three computing skills listed as tags on job listings are `Python`, `R` and `SQL` (Figure 1a).  Of the 995 jobs listed, 448 jobs (`r paste0(round(448/995 * 100,1),"%")`) use the `Python` tag, 281 jobs (`r paste0(round(281/995 * 100,1),"%")`) use the `R` tag and 249 jobs (`r paste0(round(249/995 * 100,1),"%")`) use the `SQL` tag.  While Python has consistently been the most tagged skill in data science job postings, R has become increasingly more important to employers hiring data scientists over the last three years, as it has jumped from the 5th-most frequent tag to the 2nd-most frequent tag from 2013 to 2017 (Figure 4a). Similarly, knowledge of machine learning algorithms has gained more popularity among employers hiring data scientists in a similar timeframe. 
 
+**Areas of Study**
+
+Employers' focus on coding abilities are also highlighted in the top three preferred areas of study for data science job candidates (Figure 1b): Computer Science (n = 469, `r paste0(round(469/995 * 100,1),"%")`), Statistics (n = 436,  `r paste0(round(436/995 * 100,1),"%")`) and Engineering (n = 301, `r paste0(round(301/995 * 100,1),"%")`).  Few to no changes in preferred areas of study of job candidates have occurred in the past five years, indicating that employers hiring data scientists have consistently sought candidates with quantitative and programming-based backgrounds (Figure 4b).
+
+**Location**
+
+In both the United States and Europe, the highest number of job listings appear to cluster regions where there are major cities.  As seen in Figure 3, darker reds appear over big cities like New York and San Francisco (Figure 3a), and London and Berlin (Figure 3b), indicating higher numbers of job listings, while less dense and less industrial areas either have lighter shades of yellow or are white, indicating few to zero data science job opportunities.  Interestingly, while New York and San Francisco are the two cities with the most overall job listings (Figure 1c), and have consistently ranked in the top two cities between 2013-2016, they have dropped to the fourth and fifth spots in 2017, as European cities like Berlin and London have risen to the top (Figure 4c).  This geographic trend is also noticable in figure 2, where it is apparent that the proportion of jobs posted in 2017 that are located in Europe is much larger than that of earlier years.
+
+While there are similarities in the types of cities with the most jobs in the US and Europe, there are several differences between the job benefits and characteristics by region. European employers are more likely to offer visa sponsorship (EU: 20.8%, USA: 5.9%, p < .01) and to offer assistance with relocation (EU: 35.5%, USA: 26.6%, p < .01) than US employers.  US employers are more likely to allow employees to work remotely (USA: 9.2%, EU: 2.8%, p < .01) and offer more jobs for candidates with Bachelor's Degrees only (p < .01) than European employers (Table 1).
+
+## Discussion/Limitations
+There are several limitations to this work.  First, these results do not generalize to *all* data science job listings on job boards and company pages.  The trends seen here are specific to the job board on Stack Overflow, and may be biased towards particular industries, geographic regions, or any mechanism by which Stack Overflow obtains job listings to post on their site.  Second, there is potential for underestimation in the prevalence of computing skills in job listings.  Skills were detected through tags on the job listings; it is possible that additional skills and computing languages were mentioned in the job description or requirements sections.  Similarly, there is potential for error in scraping job descriptions for areas of study and degree types, since there may be some variability in how job descriptions are written and structured.  Finally, since the data for 2017 are incomplete, trends over time may change once full data for the year are available.
+
+Discussion:
+
+\clearpage
+
+**Figure 1:** Most Popular Attributes of Job Listings
 ```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
 toptags = stackjobs %>% 
   ungroup() %>% 
@@ -338,7 +356,7 @@ bottom_row = plot_grid(locations,labels=c("(c) Top 10 Cities with the Most Job L
 plot_grid(top_row,bottom_row,ncol=1)
 ```
 
-#### Figure 2: Number of Job Listings by Year and Geographic Region
+**Figure 2:** Number of Job Listings by Year and Geographic Region
 ```{r number of jobs by region and year, echo=FALSE, warning=FALSE,message=FALSE,fig.align='center',fig.height=3,fig.width=6}
 region_year_dat = stackjobs %>% 
   mutate(Region = ifelse(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB"), "Europe",ifelse(CountryCode == "US","USA","Other"))) %>% 
@@ -357,9 +375,7 @@ ggplot(region_year_dat, aes((year),n,fill=Region)) + geom_col() + #coord_flip() 
 
 ```
 
-
-### Figure 3: Geographic Distribution of Jobs in the USA vs. Europe
-
+**Figure 3:** Geographic Distribution of Jobs in the USA vs. Europe
 ```{r plot US and EU maps,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=4,fig.width=10}
 mapdat_us = stackjobs %>%
   group_by(LocationString) %>%
@@ -466,8 +482,7 @@ kable_styling(latex_options=c("striped","hold_position")) %>% add_footnote(paste
 # model = glm(region == "USA" ~ OffersVisaSponsorship + AllowsRemote +  highest_degree,family='binomial',data=diff_analysis)
 ```
 
-#### Figure 4: Changes in Job Listing Attributes over the Last Five Years
-
+**Figure 4:** Changes in Job Listing Attributes over the Last Five Years
 ```{r trends over time,echo=FALSE,results='tex',fig.align='center',fig.height=7,fig.width=9.5}
 tag_yr <- function(yr){
   toptags = stackjobs %>% 
@@ -542,15 +557,3 @@ plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend
 
 #kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) %>% landscape()
 ```
-
-## Discussion/Limitations
-
-Discussion:
-
-Limitations:
-
-- results do not generalize to all data science job boards - Stack Overflow could attract jobs from particular industries, or in particular cities, and could be biased in this way
-    + no way to assess mechanism by which SO obtains job listings
-- skills are detected through tags and not through what is mentioned in the text
-- variability in how job descriptions and requirements are written up, and when they were missing, could result in underestimates of true skills and attributes required
-- estimates for 2017 jobs are only through September 25, 2017, and may change once the year is complete.

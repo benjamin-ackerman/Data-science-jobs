@@ -301,6 +301,8 @@ There are several limitations to this work.  First, these results do not general
 
 Discussion:
 
+\clearpage
+
 **Figure 1:** Most Popular Attributes of Job Listings
 ```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
 toptags = stackjobs %>% 
