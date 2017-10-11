@@ -198,12 +198,24 @@ saveRDS(newdat,"../stackjobs.rds")
 ```
 
 ## Introduction
-- Overall importance of statistics and data-driven jobs - "if there are data, there's need for a statistician"
-- Increased demand for data scientists as more data become available ("big data")
-- "hot new field"
-- Stack Overflow's popularity
-- So much change in best coding languages to know and where to look for jobs
-- *Find some papers or blog posts that talk about data science as a field and its growth*
+- Data Science becoming a more popular field --> attributes of data science jobs --> summary about most popular coding skills --> summary about Stack Overflow
+- ***Harvard Business Review, October 2012:***
+    + The term "data science" was coined in 2008 by data analytics leads at Facebook and LinkedIn
+    + "Data Scientist" refers to a professional with training and curiosity to make discoveries about the world through big data.
+    + HBR compares data scientists to the "quants" of Wall Street in the 1980s ans 1990s, when individuals with rigorous quantitative backgrounds were in high demand to develop algorithms and data strategies for investment banks and hedge funds.
+    + Hal Varian, chief Economist at Google, quote: "The sexy job in the next 10 years will be statisticians. People think I’m joking, but who would’ve guessed that computer engineers would’ve been the sexy job of the 1990s?"
+- ***Quant Crunch Data Science Demand Prediction Report:***
+    + By 2020, there'll be an increase of 364,000 job openings for US data professionals, corresponding to a 39% increase in demand for data scientists and data engineers
+    + Currently, data science jobs remain open for an average of 45 days, five days longer than other job types
+    + 39% of data science jobs require a Masters or PhD
+- ***Stack Overflow Developer Survey 2016:***
+    + 50,000 respondents
+    + Over 40 million people visit Stack Overflow's website every month.
+    + 15% of respondents are actively looking for a job, while 78% are interested in hearing about job opportunities.
+    + Of those looking for jobs on Stack Overflow, 26% are students
+    + Biggest priorities in jobs are salary, work-life balance, and company culture
+    + Average data scientist salary was $115,244
+    + 9.4% of respondents check Stack Overflow just for job opportunities, and over half of all respondents (56.5%) check Stack Overflow multiple times a day 
 
 ## Research Aim
 The purpose of this paper is to examine trends in job postings for "data scientists" on the Stack Overflow job board.  This involves determining the most common computing skills that employers look for, along with their preferences of degree types and areas of study.  This paper will also locate geographic regions where data science jobs are in highest demand, and if there are substantial differences in job characteristics by location.  Finally, trends of these characteristics of job listings will be explored over time.
@@ -211,13 +223,13 @@ The purpose of this paper is to examine trends in job postings for "data scienti
 ## Methods
 **Data Collection**
 
-Data were made privately available upon request from David Robinson, a Data Scientist at Stack Overflow.  The provided data consist of information from jobs posted on the Stack Overflow job board that either have "data scientist" or "data analyst" in their title between August 25, 2010 and September 25, 2017.  While company names were censored from the data, the following attributes of each posting were provided in a data frame: job title, original posting date (YEAR-MM-DD), associated tags indicating relevant skills, job location (City, State, Country), salary (when included), and the full text of job descriptions and requirements.
+Data were made privately available upon request from David Robinson, a Data Scientist at Stack Overflow.  The provided data consist of information from jobs posted on the Stack Overflow job board that either have "data scientist" or "data analyst" in their title between August 25, 2010 and September 25, 2017.  While company names were censored from the data, the following attributes of each posting were provided in a data frame: job title, original posting date (YEAR-MM-DD), associated tags indicating relevant skills, job location (City, State, Country), salary (when included), whether a company would sponsor a visa, allow remote work, or offer assistance with relocation, and the full text of job descriptions and requirements.
 
 While a fair amount of variables were already provided in a dataframe, additional information was extracted from the data and cleaned.  The `geocode` function in the `ggmap` package was used to gather latitude and longitude coordinates for each job location. Preferences of academic backgrounds were extracted from the job requirements section.  This included any mentions of type of degree (Bachelors, Masters, PhD) along with mentions of favorable majors and departments.  To detect relevant majors, a dictionary was compiled using a comprehensive list of STEM fields provided by [**Stemdegreelist.com**](http://stemdegreelist.com/stem-degree-list/).  Additionally, for jobs that mentioned multiple degrees (i.e, "Bachelor's degree required, Master's degree preferred"), the "highest degree preferred" for a job listing was determined.  For listings that did not provide job requirement sections, the job descriptions section was used to check for these attributes.
 
 **Exploratory Data Analysis**
 
-Exploratory data analysis wasconducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.  Hex maps were generated to view the distribution of the number of jobs posted by geographic location. To visualize the changes in the top ten tags, areas of study, and job locations over the last five years, code to generate a change-in-ranking plot was modified from a function described on [**this Stack Overflow forum**](https://stackoverflow.com/questions/25781284/simplest-way-to-plot-changes-in-ranking-between-two-ordered-lists-in-r). Number of job postings were also tabulated by year and geographic region to determine if there were any changes in frequency of postings by region over time.
+Exploratory data analysis was conducted to summarize the most commonly listed attributes in the job postings.  Skill tags, areas of study, and job locations were tabulated across all postings and ranked to determine the most common skills sought by employers, and where the most employment opportunities were geographically located.  Hex maps were generated to view the distribution of the number of jobs posted by geographic location. To visualize the changes in the top ten tags, areas of study, and job locations over the last five years, code to generate a change-in-ranking plot was modified from a function described on [**this Stack Overflow forum**](https://stackoverflow.com/questions/25781284/simplest-way-to-plot-changes-in-ranking-between-two-ordered-lists-in-r). Number of job postings were also tabulated by year and geographic region to determine if there were any changes in frequency of postings by region over time.
 
 **Statistical Analysis**
 
@@ -300,8 +312,6 @@ While there are similarities in the types of cities with the most jobs in the US
 There are several limitations to this work.  First, these results do not generalize to *all* data science job listings on job boards and company pages.  The trends seen here are specific to the job board on Stack Overflow, and may be biased towards particular industries, geographic regions, or any mechanism by which Stack Overflow obtains job listings to post on their site.  Second, there is potential for underestimation in the prevalence of computing skills in job listings.  Skills were detected through tags on the job listings; it is possible that additional skills and computing languages were mentioned in the job description or requirements sections.  Similarly, there is potential for error in scraping job descriptions for areas of study and degree types, since there may be some variability in how job descriptions are written and structured.  Finally, since the data for 2017 are incomplete, trends over time may change once full data for the year are available.
 
 Discussion:
-
-\clearpage
 
 **Figure 1:** Most Popular Attributes of Job Listings
 ```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
