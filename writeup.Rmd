@@ -292,9 +292,14 @@ Employers' focus on coding abilities are also highlighted in the top three prefe
 
 **Location**
 
-In both the United States and Europe, the highest number of job listings appear to cluster regions where there are major cities.  Darker reds appear over big cities like New York and San Francisco (Figure 3a), and London and Berlin (Figure 3b), indicating higher numbers of job listings, while less dense and less industrial areas have lighter shades of yellow, indicating fewer data science job opportunities.  Interestingly, while New York and San Francisco are the two cities with the most overall job listings (Figure 1c), and have consistently ranked in the top two cities between 2013-2016, they have dropped to the fourth and fifth spots in 2017, as European cities like Berlin and London have risen to the top (Figure 4c).  This geographic trend is also noticable in figure 2, where it is apparent that the proportion of jobs posted in 2017 that are located in Europe is much larger than that of earlier years.
+In both the United States and Europe, the highest number of job listings appear to cluster regions where there are major cities.  As seen in Figure 3, darker reds appear over big cities like New York and San Francisco (Figure 3a), and London and Berlin (Figure 3b), indicating higher numbers of job listings, while less dense and less industrial areas either have lighter shades of yellow or are white, indicating few to zero data science job opportunities.  Interestingly, while New York and San Francisco are the two cities with the most overall job listings (Figure 1c), and have consistently ranked in the top two cities between 2013-2016, they have dropped to the fourth and fifth spots in 2017, as European cities like Berlin and London have risen to the top (Figure 4c).  This geographic trend is also noticable in figure 2, where it is apparent that the proportion of jobs posted in 2017 that are located in Europe is much larger than that of earlier years.
 
 While there are similarities in the types of cities with the most jobs in the US and Europe, there are several differences between the job benefits and characteristics by region. European employers are more likely to offer visa sponsorship (EU: 20.8%, USA: 5.9%, p < .01) and to offer assistance with relocation (EU: 35.5%, USA: 26.6%, p < .01) than US employers.  US employers are more likely to allow employees to work remotely (USA: 9.2%, EU: 2.8%, p < .01) and offer more jobs for candidates with Bachelor's Degrees only (p < .01) than European employers (Table 1).
+
+## Discussion/Limitations
+There are several limitations to this work.  First, these results do not generalize to *all* data science job listings on job boards and company pages.  The trends seen here are specific to the job board on Stack Overflow, and may be biased towards particular industries, geographic regions, or any mechanism by which Stack Overflow obtains job listings to post on their site.  Second, there is potential for underestimation in the prevalence of computing skills in job listings.  Skills were detected through tags on the job listings; it is possible that additional skills and computing languages were mentioned in the job description or requirements sections.  Similarly, there is potential for error in scraping job descriptions for areas of study and degree types, since there may be some variability in how job descriptions are written and structured.  Finally, since the data for 2017 are incomplete, trends over time may change once full data for the year are available.
+
+Discussion:
 
 **Figure 1:** Most Popular Attributes of Job Listings
 ```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
@@ -550,15 +555,3 @@ plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend
 
 #kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) %>% landscape()
 ```
-
-## Discussion/Limitations
-
-Discussion:
-
-Limitations:
-
-- results do not generalize to all data science job boards - Stack Overflow could attract jobs from particular industries, or in particular cities, and could be biased in this way
-    + no way to assess mechanism by which SO obtains job listings
-- skills are detected through tags and not through what is mentioned in the text
-- variability in how job descriptions and requirements are written up, and when they were missing, could result in underestimates of true skills and attributes required
-- estimates for 2017 jobs are only through September 25, 2017, and may change once the year is complete.
