@@ -1,7 +1,7 @@
 ---
 title: "Trends in Data Science Job Postings on Stack Overflow"
 author: "Benjamin Ackerman"
-date: "October 11, 2017"
+date: "October 18, 2017"
 mainfont: Times New Roman
 output: 
   pdf_document:
@@ -10,13 +10,13 @@ fontsize: 12pt
 geometry: margin=1in
 ---
 
-```{r setup, echo=FALSE, warning=FALSE,message=FALSE,results='hide'}
+```{r install necessary packages, echo=FALSE, warning=FALSE,message=FALSE,results='hide'}
 packages = c("devtools","qdapRegex","knitr","dplyr","kableExtra","ggmap","stringr","tidyr","rebus","maps","grid","cowplot","ggplot2")
 
-#check.packages = function(package){
-#  if(!package %in% library()$results[,1]){install.packages(package,dependencies=TRUE)}
-#  else{("already installed")}
-#}
+check.packages = function(package){
+  if(!package %in% install.packages()){install.packages(package,dependencies=TRUE)}
+  else{("already installed")}
+}
 
 # Install packages that are not already installed
 #sapply(packages,check.packages)
@@ -25,7 +25,7 @@ packages = c("devtools","qdapRegex","knitr","dplyr","kableExtra","ggmap","string
 lapply(packages,library,character.only=TRUE)
 ```
 
-```{r test setup, include=FALSE}
+```{r chunk options, include=FALSE}
 opts_chunk$set(dev = 'pdf')
 ```
 
@@ -51,9 +51,6 @@ newdat$LocationString = str_replace(newdat$LocationString,"London, England","Lon
 # Geocode locations to plot them
 latlon<-geocode(newdat$LocationString,output='latlon')
 newdat = cbind(newdat,latlon)
-
-#newdat$lat = jitter_latlong(latlon$lat,type='lat')
-#newdat$lon = jitter_latlong(latlon$lon,type='long',newdat$lat)
 
 ### Regular expressions to find strong/ideal requirements, and lines in requirement decriptions to delete
 strong=or("[Ii]"%R%"deal"%R%optional("ly"),
@@ -315,6 +312,7 @@ Discussion:
 
 **Figure 1:** Most Popular Attributes of Job Listings
 ```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
+# Find the top 10 tags in job postings
 toptags = stackjobs %>% 
   ungroup() %>% 
   .$Tags %>% 
@@ -328,11 +326,13 @@ toptags = stackjobs %>%
   filter(!is.na(tags)) %>% 
   filter(!tags %in% c("statistics","bigdata","javascript","data science"))
 
+# Create plot of top 10 tags
 tags = ggplot(toptags[1:10,], aes(reorder(tags,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
                axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
 
+# Find the top 10 majors in job postings
 topmajors = stackjobs %>% 
   .$majors %>% 
   unlist() %>% 
@@ -342,11 +342,13 @@ topmajors = stackjobs %>%
   arrange(desc(n)) %>% 
   filter(!is.na(majors))
 
+# Create plot of top 10 majors
 majors = ggplot(topmajors[1:10,], aes(reorder(majors,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
                axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
 
+# Find the top 10 locations in job postings
 toplocations = stackjobs %>% 
   .$LocationString %>% 
   unlist() %>% 
@@ -356,11 +358,13 @@ toplocations = stackjobs %>%
   arrange(desc(n)) %>% 
   filter(!is.na(locations))
 
+# Create plot of top 10 locations
 locations = ggplot(toplocations[1:10,], aes(reorder(locations,n),n)) + geom_col() + coord_flip() + labs(y="Count",x="")+theme(axis.title.x=element_text(size=11),
                axis.title.y=element_text(size=11),
                axis.text.x = element_text(size=10),
                axis.text.y = element_text(size=10))+scale_y_continuous(expand=c(0,0))
 
+# Make a grid of the three plots, and then plot it
 top_row = plot_grid(tags,majors, labels = c("(a) Top 10 Tags in Job Listings","(b) Top 10 Areas of Study in Job Listings",""),scale = 0.9,hjust=-.15,label_size=10)
 bottom_row = plot_grid(locations,labels=c("(c) Top 10 Cities with the Most Job Listings"),scale=.9,hjust=-.35,label_size=10)
 plot_grid(top_row,bottom_row,ncol=1)
@@ -368,12 +372,14 @@ plot_grid(top_row,bottom_row,ncol=1)
 
 **Figure 2:** Number of Job Listings by Year and Geographic Region
 ```{r number of jobs by region and year, echo=FALSE, warning=FALSE,message=FALSE,fig.align='center',fig.height=3,fig.width=6}
+# Count number of jobs by year and region:
 region_year_dat = stackjobs %>% 
   mutate(Region = ifelse(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB"), "Europe",ifelse(CountryCode == "US","USA","Other"))) %>% 
   group_by(Region,year) %>% 
   count() #%>% 
   #filter(year > 2012)
 
+# Plot number of jobs by year and region:
 ggplot(region_year_dat, aes((year),n,fill=Region)) + geom_col() + #coord_flip() +
   labs(y="Count",x="")+#scale_x_discrete(labels=rev(names(table(region_year_dat$year))))+
   theme(axis.title.x=element_text(size=11),
@@ -387,6 +393,7 @@ ggplot(region_year_dat, aes((year),n,fill=Region)) + geom_col() + #coord_flip() 
 
 **Figure 3:** Geographic Distribution of Jobs in the USA vs. Europe
 ```{r plot US and EU maps,echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=4,fig.width=10}
+# Prepare data to plot map of US jobs
 mapdat_us = stackjobs %>%
   group_by(LocationString) %>%
   count() %>%
@@ -394,6 +401,7 @@ mapdat_us = stackjobs %>%
   filter(CountryCode == "US") %>%
   mutate(region = "USA")
 
+# Create map of US jobs
 us=ggplot()+borders(database="state")+geom_hex(data=mapdat_us, mapping=aes(x=lon,y=lat), bins=15,alpha=.8)+scale_fill_gradient(low = "yellow", high = "red")+theme(
               legend.position="none",
               axis.title.x = element_blank(),
@@ -423,6 +431,7 @@ us=ggplot()+borders(database="state")+geom_hex(data=mapdat_us, mapping=aes(x=lon
 #                axis.text.y=element_blank(),
 #                axis.ticks.y=element_blank())
 
+# Prepare data to plot map of EU jobs
 mapdat_eu = stackjobs %>% 
   group_by(LocationString) %>% 
   count() %>% 
@@ -430,6 +439,7 @@ mapdat_eu = stackjobs %>%
   filter(CountryCode %in% c("AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","GB")) %>% 
   mutate(region = "EU")
 
+# Create map of EU jobs
 europe=ggplot()+borders(database="world",xlim=c(-10,25),ylim=c(40,70))+geom_hex(data=mapdat_eu, mapping=aes(x=lon,y=lat), bins=15,alpha=.8)+scale_fill_gradient("# of Jobs",low = "yellow", high = "red")+theme(
                axis.title.x = element_blank(),
                axis.line = element_blank(),
@@ -441,6 +451,7 @@ europe=ggplot()+borders(database="world",xlim=c(-10,25),ylim=c(40,70))+geom_hex(
                legend.title=element_text(size=10),
                legend.text=element_text(size=10))
 
+# Plot the two maps on a grid
 plot_grid(us,europe, labels = c(paste0("(a) USA (n=",nrow(mapdat_us),")"), paste0("(b) Europe (n=",nrow(mapdat_eu),")")), align = "v", label_size=12)
 ```
 
@@ -462,7 +473,7 @@ diffs=as.matrix(diff_analysis %>%
 
 job_diffs = matrix(paste0(diffs[,-4]," (", round(diffs/diffs[,4]*100,1)[,-4],"%)"),ncol=2,byrow=TRUE)[,c(2,1)]
 
-# Tabulate differences in highest degree required
+# Tabulate differences in "highest degree preferred"
 tab<-with(diff_analysis,table(region,highest_degree))
 degree_diffs = matrix(paste0(t(tab)," (", round(t(prop.table(tab,1))*100,1),"%)")
 ,ncol=2)[,c(2,1)]
@@ -480,6 +491,7 @@ p = c(p,chisq.test(tab)$p.value) %>%
   format(scientific = TRUE,digits = 3) %>% 
   c(rep("",2))
 
+# Put the final table together
 diff_tab = rbind(job_diffs,degree_diffs)
 diff_tab=cbind(diff_tab,p)
 colnames(diff_tab) = c("USA","Europe","P-value")
@@ -494,6 +506,7 @@ kable_styling(latex_options=c("striped","hold_position")) %>% add_footnote(paste
 
 **Figure 4:** Changes in Job Listing Attributes over the Last Five Years
 ```{r trends over time,echo=FALSE,results='tex',fig.align='center',fig.height=7,fig.width=9.5}
+# Function to find the top 10 tags for a given year
 tag_yr <- function(yr){
   toptags = stackjobs %>% 
     filter(year == yr) %>% 
@@ -512,13 +525,14 @@ tag_yr <- function(yr){
     .$tags
 }
 
+# Find top 10 tags for 2013-2017
 tag_trend = sapply(2013:2017,tag_yr)
 colnames(tag_trend) = 2013:2017
 row.names(tag_trend) = 1:10
 
-
 #kable(tag_trend,format = "latex", booktabs = T,caption="Top 10 Tags in Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position"))
 
+# Function to find the top 10 majors for a given year
 major_yr <- function(yr){
   stackjobs %>% 
     filter(year == yr) %>% 
@@ -533,6 +547,7 @@ major_yr <- function(yr){
     .$majors
 }
 
+# Find the top 10 majors for 2013-2017
 major_trend = sapply(2013:2017,major_yr)
 colnames(major_trend) = 2013:2017
 row.names(major_trend) = 1:10
@@ -540,6 +555,7 @@ row.names(major_trend) = 1:10
 #kable(major_trend,format = "latex", booktabs = T,caption="Top 10 Areas of Study in Job Listings by Year")%>%
 #kable_styling(latex_options="hold_position")
 
+# Function to find the top 10 locatiosn for a given year
 city_yr <- function(yr){
   cities =stackjobs %>%
     filter(year == yr) %>% 
@@ -556,10 +572,12 @@ city_yr <- function(yr){
   cities[,1]
 }
 
+# Find the top 10 locations for 2013-2017
 city_trend = sapply(2013:2017,city_yr)
 colnames(city_trend) = 2013:2017
 row.names(city_trend) = 1:10
 
+# Put together rankings plots for tags, majors, and locations
 par(mfrow=c(3,1))
 plotRanks(tag_trend[,1],tag_trend[,2],tag_trend[,3],tag_trend[,4],tag_trend[,5],"(a) Top 10 Tags by Year")
 plotRanks(major_trend[,1],major_trend[,2],major_trend[,3],major_trend[,4],major_trend[,5],"(b) Top 10 Areas of Study by Year")
