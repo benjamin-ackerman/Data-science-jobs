@@ -569,10 +569,15 @@ plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend
 ```
 **Figure 4. Changes in Job Listing Attributes over the Last Five Years.** (a): While Python has consistently been the top skill tag on job listings, programming languages like R and SQL, along with Machine Learning algorithms, have risen to the top over the last three years.  (b): There has been little to no change in the top ten areas of study preferred by employers over the last five years. (c): While New York and San Francisco have had the most job listings between 2013-2016, 2017 is dominated by European cities like Berlin, London and Amsterdam.
 
-# Discussion/Limitations
+# Limitations/Discussion
 There are several limitations to this work.  First, these results do not generalize to *all* data science job listings on job boards and company pages.  The trends seen here are specific to the job board on Stack Overflow, and may be biased towards particular industries, geographic regions, or any mechanism by which Stack Overflow obtains job listings to post on their site.  Second, there is potential for underestimation in the prevalence of computing skills in job listings.  Skills were detected through tags on the job listings; it is possible that additional skills and computing languages were mentioned in the job description or requirements sections.  Similarly, there is potential for error in scraping job descriptions for areas of study and degree types, since there may be some variability in how job descriptions are written and structured.  Finally, since the data for 2017 are incomplete, trends over time may change once full data for the year are available.
 
-*Discussion: mention Stack Overflow blog posts about the rise of Python and R*
+*Discussion: mention Stack Overflow blog posts about the rise of Python and R, rise in Europe's startup culture*
+
+- [Rise of Python](https://stackoverflow.blog/2017/09/06/incredible-growth-python/)
+- [Rise of R](https://stackoverflow.blog/2017/10/10/impressive-growth-r/)
+- [Berlin's startup culture](http://www.computerweekly.com/feature/Berlin-and-the-European-startup-race-for-innovation)
+- [Eastern Europe startup culture](http://www.independent.co.uk/Business/indyventure/eastern-europe-tech-secotr-entrepreneurs-startup-global-investors-funds-growth-a7752546.html)
 
 # Acknowledgements
 A big thank you to David Robinson for providing job listings data from Stack Overflow.
