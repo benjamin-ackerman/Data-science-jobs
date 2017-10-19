@@ -1,0 +1,157 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 2.7 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \sortlist[entry]{nty/global/}
+    \entry{jeevan_2017}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=3086ae03b2aabcc1f2157e6a9e8a6a46}{%
+           family={Jeevan},
+           family_i={J\bibinitperiod},
+           given={Manu},
+           given_i={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{3086ae03b2aabcc1f2157e6a9e8a6a46}
+      \strng{fullhash}{3086ae03b2aabcc1f2157e6a9e8a6a46}
+      \field{sortinit}{J}
+      \field{sortinithash}{ec3950a647c092421b9fcca6d819504a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Springboard Blog}
+      \field{month}{05}
+      \field{title}{20 Websites To Find Data Science Jobs}
+      \field{year}{2017}
+      \verb{url}
+      \verb https://www.springboard.com/blog/data-science-jobs/
+      \endverb
+    \endentry
+    \entry{miller2017quant}{misc}{}
+      \name{author}{2}{}{%
+        {{hash=ec9380f40652005b58c5be53c31720e7}{%
+           family={Miller},
+           family_i={M\bibinitperiod},
+           given={Steven},
+           given_i={S\bibinitperiod}}}%
+        {{hash=f74a5a471f25cfd33fabea777c8c8ea1}{%
+           family={Hughes},
+           family_i={H\bibinitperiod},
+           given={Debbie},
+           given_i={D\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Boston, MA: Burning Glass Technologies}%
+      }
+      \strng{namehash}{4764ca82ef8ca2af80fee44183c422da}
+      \strng{fullhash}{4764ca82ef8ca2af80fee44183c422da}
+      \field{sortinit}{M}
+      \field{sortinithash}{2684bec41e9697b92699b46491061da2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{The Quant Crunch: How the Demand for Data Science Skills Is Disrupting the Job Market}
+      \field{year}{2017}
+    \endentry
+    \entry{overflow2016developer}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=928a3e3d99440ed892dda5028159a3aa}{%
+           family={Overflow},
+           family_i={O\bibinitperiod},
+           given={Stack},
+           given_i={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{928a3e3d99440ed892dda5028159a3aa}
+      \strng{fullhash}{928a3e3d99440ed892dda5028159a3aa}
+      \field{sortinit}{O}
+      \field{sortinithash}{7803d2715d5e795e70382b084ab8d00e}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Developer Survey Results 2016}
+      \field{year}{2016}
+      \verb{url}
+      \verb https://insights.stackoverflow.com/survey/2016
+      \endverb
+    \endentry
+    \entry{patil2012data}{article}{}
+      \name{author}{2}{}{%
+        {{hash=769c17018b4b817a15a5c1dcfdb01a62}{%
+           family={Patil},
+           family_i={P\bibinitperiod},
+           given={D.J.},
+           given_i={D\bibinitperiod}}}%
+        {{hash=1b966ca71341c206e76ccf8fa70f3e24}{%
+           family={Davenport},
+           family_i={D\bibinitperiod},
+           given={Thomas\bibnamedelima H.},
+           given_i={T\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+      }
+      \strng{namehash}{699a1dac0b8d9f0ed67c6e0df89c1273}
+      \strng{fullhash}{699a1dac0b8d9f0ed67c6e0df89c1273}
+      \field{sortinit}{P}
+      \field{sortinithash}{c0a4896d0e424f9ca4d7f14f2b3428e7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Harvard Business Review}
+      \field{title}{Data scientist: the sexiest job of the 21st century}
+      \field{year}{2012}
+    \endentry
+    \entry{z2012harness}{book}{}
+      \true{moreauthor}
+      \true{morelabelname}
+      \name{author}{5}{}{%
+        {{hash=038cd364916c934c2c6b8d2cfcb82b22}{%
+           family={Zikopoulos},
+           family_i={Z\bibinitperiod},
+           given={Paul},
+           given_i={P\bibinitperiod}}}%
+        {{hash=fe6b9fe6df15737c5d6d61be96247ad5}{%
+           family={Parasuraman},
+           family_i={P\bibinitperiod},
+           given={Krishnan},
+           given_i={K\bibinitperiod}}}%
+        {{hash=8fc7f192803cd7e33f46a8be47911157}{%
+           family={Deutsch},
+           family_i={D\bibinitperiod},
+           given={Thomas},
+           given_i={T\bibinitperiod}}}%
+        {{hash=a54f4efbef06e630c6dd1600e44ac94a}{%
+           family={Giles},
+           family_i={G\bibinitperiod},
+           given={James},
+           given_i={J\bibinitperiod}}}%
+        {{hash=7297774b2a1d33a51565c4eccc298723}{%
+           family={Corrigan},
+           family_i={C\bibinitperiod},
+           given={David},
+           given_i={D\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {McGraw Hill Professional}%
+      }
+      \strng{namehash}{53e38dca240068d36d249f97f9643cc5}
+      \strng{fullhash}{984045817a5805f498fa1b75a1f6bffd}
+      \field{sortinit}{Z}
+      \field{sortinithash}{fdda4caaa6b5fa63e0c081dcb159543a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Harness the power of big data The IBM big data platform}
+      \field{year}{2012}
+    \endentry
+  \endsortlist
+\endrefsection
+\endinput
+

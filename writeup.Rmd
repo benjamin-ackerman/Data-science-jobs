@@ -6,8 +6,10 @@ mainfont: Times New Roman
 output: 
   pdf_document:
     latex_engine: xelatex
+    citation_package: biblatex
 fontsize: 12pt
 geometry: margin=1in
+bibliography: bibliography.bib
 ---
 
 ```{r install necessary packages, echo=FALSE, warning=FALSE,message=FALSE,results='hide'}
@@ -194,30 +196,15 @@ newdat$majors[which(lapply(newdat$majors,length)==0)]=NA
 saveRDS(newdat,"../stackjobs.rds")
 ```
 
-## Introduction
-- Data Science becoming a more popular field --> attributes of data science jobs --> summary about most popular coding skills --> summary about Stack Overflow
-- ***Harvard Business Review, October 2012:***
-    + The term "data science" was coined in 2008 by data analytics leads at Facebook and LinkedIn
-    + "Data Scientist" refers to a professional with training and curiosity to make discoveries about the world through big data.
-    + HBR compares data scientists to the "quants" of Wall Street in the 1980s ans 1990s, when individuals with rigorous quantitative backgrounds were in high demand to develop algorithms and data strategies for investment banks and hedge funds.
-    + Hal Varian, chief Economist at Google, quote: "The sexy job in the next 10 years will be statisticians. People think I’m joking, but who would’ve guessed that computer engineers would’ve been the sexy job of the 1990s?"
-- ***Quant Crunch Data Science Demand Prediction Report:***
-    + By 2020, there'll be an increase of 364,000 job openings for US data professionals, corresponding to a 39% increase in demand for data scientists and data engineers
-    + Currently, data science jobs remain open for an average of 45 days, five days longer than other job types
-    + 39% of data science jobs require a Masters or PhD
-- ***Stack Overflow Developer Survey 2016:***
-    + 50,000 respondents
-    + Over 40 million people visit Stack Overflow's website every month.
-    + 15% of respondents are actively looking for a job, while 78% are interested in hearing about job opportunities.
-    + Of those looking for jobs on Stack Overflow, 26% are students
-    + Biggest priorities in jobs are salary, work-life balance, and company culture
-    + Average data scientist salary was $115,244
-    + 9.4% of respondents check Stack Overflow just for job opportunities, and over half of all respondents (56.5%) check Stack Overflow multiple times a day 
+# Introduction
+Coined in 2008 by data analytics leads at Facebook and LinkedIn, the term "data science" refers to a profession for people with quantitative training, computer programming experience and intellectual curiosity to make discoveries about the world through big data [@patil2012data] .  As computers and technology have evolved, so too have methods of defining, collecting and processing data.  The recent emergence of the field of data science has accompanied researchers' abilities to access and store unprecedented amounts of information.  There is a massive (and growing) demand for data scientists to make discoveries with the estimated 2.5 quintillion bytes of data that are created *daily* [@z2012harness]; however, the growth in available data has far exceeded the rate at which people have entered data science positions.  On average, data science jobs currently remain open for 45 days, five days longer than other job types, and it is predicted that there will be a 39% increase in demand for data scientists and data engineers by 2020, corresponding to around 364,000 more job openings [@miller2017quant].
 
-## Research Aim
+With such a high demand for data scientists, it is crucial for employers to identify the best platforms for advertising their job listings.  Traditional online job boards, like Craigslist, Monster and Indeed, contain ample data science job postings, but sometimes lack the search capabilities for candidates to easily identify and apply for relevant positions.  Therefore, individuals interested in data science opportunities often utilize smaller, more specialized job boards [@jeevan_2017].  Stack Overflow is a popular online community for developers and computer programmers to learn, share knowledge and discover career opportunities, with over 40 million visits to the site every month.  A recent survey showed that about 15% of the site's users are actively searching for a job on Stack Overflow (26% of whom are students), and 78% are interested in hearing about job opportunities [@overflow2016developer].
+
+# Research Aim
 The purpose of this paper is to examine trends in job postings for "data scientists" on the Stack Overflow job board.  This involves determining the most common computing skills that employers look for, along with their preferences of degree types and areas of study.  This paper will also locate geographic regions where data science jobs are in highest demand, and if there are substantial differences in job characteristics by location.  Finally, trends of these characteristics of job listings will be explored over time.
 
-## Methods
+# Methods
 **Data Collection**
 
 Data were made privately available upon request from David Robinson, a Data Scientist at Stack Overflow.  The provided data consist of information from jobs posted on the Stack Overflow job board that either have "data scientist" or "data analyst" in their title between August 25, 2010 and September 25, 2017.  While company names were censored from the data, the following attributes of each posting were provided in a data frame: job title, original posting date (YEAR-MM-DD), associated tags indicating relevant skills, job location (City, State, Country), salary (when included), whether a company would sponsor a visa, allow remote work, or offer assistance with relocation, and the full text of job descriptions and requirements.
@@ -232,7 +219,7 @@ Exploratory data analysis was conducted to summarize the most commonly listed at
 
 In order to assess any differences in jobs by location, proportions of jobs that offer visa sponsorship, allow remote work, and assist with relocation were compared between jobs listed in the US and Europe, the two geographic regions with the highest numbers of job listings, using two-sample t-tests.  The distributions of highest degree preferred were compared across regions with a Pearson's Chi-squared test.
 
-## Results
+# Results
 ```{r load data,echo=FALSE}
 stackjobs = readRDS("../stackjobs.rds")
 ```
@@ -305,11 +292,19 @@ In both the United States and Europe, the highest number of job listings appear 
 
 While there are similarities in the types of cities with the most jobs in the US and Europe, there are several differences between the job benefits and characteristics by region. European employers are more likely to offer visa sponsorship (EU: 20.8%, USA: 5.9%, p < .01) and to offer assistance with relocation (EU: 35.5%, USA: 26.6%, p < .01) than US employers.  US employers are more likely to allow employees to work remotely (USA: 9.2%, EU: 2.8%, p < .01) and offer more jobs for candidates with Bachelor's Degrees only (p < .01) than European employers (Table 1).
 
-## Discussion/Limitations
+# Discussion/Limitations
 There are several limitations to this work.  First, these results do not generalize to *all* data science job listings on job boards and company pages.  The trends seen here are specific to the job board on Stack Overflow, and may be biased towards particular industries, geographic regions, or any mechanism by which Stack Overflow obtains job listings to post on their site.  Second, there is potential for underestimation in the prevalence of computing skills in job listings.  Skills were detected through tags on the job listings; it is possible that additional skills and computing languages were mentioned in the job description or requirements sections.  Similarly, there is potential for error in scraping job descriptions for areas of study and degree types, since there may be some variability in how job descriptions are written and structured.  Finally, since the data for 2017 are incomplete, trends over time may change once full data for the year are available.
 
-Discussion:
+- ***Stack Overflow Developer Survey 2016:***
+    + Biggest priorities in jobs are salary, work-life balance, and company culture
+    + Average data scientist salary was $115,244
+    + 9.4% of respondents check Stack Overflow just for job opportunities, and over half of all respondents (56.5%) check Stack Overflow multiple times a day 
 
+
+# Acknowledgements
+A big thank you to David Robinson for providing job listings data from Stack Overflow.
+
+\clearpage 
 **Figure 1:** Most Popular Attributes of Job Listings
 ```{r top tags areas of study and cities, echo=FALSE,warning=FALSE,message=FALSE,fig.align='center',fig.height=6,fig.width=8}
 # Find the top 10 tags in job postings
