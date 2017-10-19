@@ -41,6 +41,36 @@
       \verb https://www.springboard.com/blog/data-science-jobs/
       \endverb
     \endentry
+    \entry{ggmap}{article}{}
+      \name{author}{2}{}{%
+        {{hash=b772d85b4513b45500546f78b30a353d}{%
+           family={Kahle},
+           family_i={K\bibinitperiod},
+           given={David},
+           given_i={D\bibinitperiod}}}%
+        {{hash=1d0f6977ce2d043e298a59a1cd75b7ef}{%
+           family={Wickham},
+           family_i={W\bibinitperiod},
+           given={Hadley},
+           given_i={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{370a7de68fb7844aadbb9d0f62d4341b}
+      \strng{fullhash}{370a7de68fb7844aadbb9d0f62d4341b}
+      \field{sortinit}{K}
+      \field{sortinithash}{a7d5b3aec5a0890aae7baf85a209abfc}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The R Journal}
+      \field{number}{1}
+      \field{title}{ggmap: Spatial Visualization with ggplot2}
+      \field{volume}{5}
+      \field{year}{2013}
+      \field{pages}{144\bibrangedash 161}
+      \range{pages}{18}
+      \verb{url}
+      \verb http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
+      \endverb
+    \endentry
     \entry{miller2017quant}{misc}{}
       \name{author}{2}{}{%
         {{hash=ec9380f40652005b58c5be53c31720e7}{%
@@ -108,6 +138,121 @@
       \field{journaltitle}{Harvard Business Review}
       \field{title}{Data scientist: the sexiest job of the 21st century}
       \field{year}{2012}
+    \endentry
+    \entry{citeR}{manual}{}
+      \name{author}{1}{}{%
+        {{hash=a902f7a1275f47f57554b7ea75ccd0bc}{%
+           family={{R Core Team}},
+           family_i={R\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {Vienna, Austria}%
+      }
+      \list{organization}{1}{%
+        {R Foundation for Statistical Computing}%
+      }
+      \strng{namehash}{a902f7a1275f47f57554b7ea75ccd0bc}
+      \strng{fullhash}{a902f7a1275f47f57554b7ea75ccd0bc}
+      \field{sortinit}{R}
+      \field{sortinithash}{c7387613477035a752d935acfc3e3ea2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{R: A Language and Environment for Statistical Computing}
+      \field{year}{2017}
+      \verb{url}
+      \verb https://www.R-project.org/
+      \endverb
+    \endentry
+    \entry{rankplot}{misc}{}
+      \field{sortinit}{S}
+      \field{sortinithash}{fd1e7c5ab79596b13dbbb67f8d70fb5a}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Stack Overflow}
+      \field{title}{Simplest way to plot changes in ranking between two ordered lists in R?}
+      \verb{url}
+      \verb https://stackoverflow.com/questions/25781284/simplest-way-to-plot-changes-in-ranking-between-two-ordered-lists-in-r
+      \endverb
+    \endentry
+    \entry{ggplot2}{book}{}
+      \name{author}{1}{}{%
+        {{hash=1d0f6977ce2d043e298a59a1cd75b7ef}{%
+           family={Wickham},
+           family_i={W\bibinitperiod},
+           given={Hadley},
+           given_i={H\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Springer-Verlag New York}%
+      }
+      \strng{namehash}{1d0f6977ce2d043e298a59a1cd75b7ef}
+      \strng{fullhash}{1d0f6977ce2d043e298a59a1cd75b7ef}
+      \field{sortinit}{W}
+      \field{sortinithash}{99e3ba1b3f78bb6f073e7fa7ac11636b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-0-387-98140-6}
+      \field{title}{ggplot2: Elegant Graphics for Data Analysis}
+      \field{year}{2009}
+      \verb{url}
+      \verb http://ggplot2.org
+      \endverb
+    \endentry
+    \entry{stringr}{manual}{}
+      \name{author}{1}{}{%
+        {{hash=1d0f6977ce2d043e298a59a1cd75b7ef}{%
+           family={Wickham},
+           family_i={W\bibinitperiod},
+           given={Hadley},
+           given_i={H\bibinitperiod}}}%
+      }
+      \strng{namehash}{1d0f6977ce2d043e298a59a1cd75b7ef}
+      \strng{fullhash}{1d0f6977ce2d043e298a59a1cd75b7ef}
+      \field{sortinit}{W}
+      \field{sortinithash}{99e3ba1b3f78bb6f073e7fa7ac11636b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{R package version 1.2.0}
+      \field{title}{stringr: Simple, Consistent Wrappers for Common String Operations}
+      \field{year}{2017}
+      \verb{url}
+      \verb https://CRAN.R-project.org/package=stringr
+      \endverb
+    \endentry
+    \entry{dplyr}{manual}{}
+      \name{author}{4}{}{%
+        {{hash=1d0f6977ce2d043e298a59a1cd75b7ef}{%
+           family={Wickham},
+           family_i={W\bibinitperiod},
+           given={Hadley},
+           given_i={H\bibinitperiod}}}%
+        {{hash=6c92aec390febcf0ca8a4e7c68c5ea6c}{%
+           family={Francois},
+           family_i={F\bibinitperiod},
+           given={Romain},
+           given_i={R\bibinitperiod}}}%
+        {{hash=4caae9be043b32573c94b11203a4a2fe}{%
+           family={Henry},
+           family_i={H\bibinitperiod},
+           given={Lionel},
+           given_i={L\bibinitperiod}}}%
+        {{hash=1435ca4f08e53208e1c34297357afa80}{%
+           family={Müller},
+           family_i={M\bibinitperiod},
+           given={Kirill},
+           given_i={K\bibinitperiod}}}%
+      }
+      \strng{namehash}{e0731a35ef88164c57848ecb7ca5f8ca}
+      \strng{fullhash}{7a6990cba5f72a3cbeb6bc161a4cb3d3}
+      \field{sortinit}{W}
+      \field{sortinithash}{99e3ba1b3f78bb6f073e7fa7ac11636b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{R package version 0.7.4}
+      \field{title}{dplyr: A Grammar of Data Manipulation}
+      \field{year}{2017}
+      \verb{url}
+      \verb https://CRAN.R-project.org/package=dplyr
+      \endverb
     \endentry
     \entry{z2012harness}{book}{}
       \true{moreauthor}
