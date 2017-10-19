@@ -435,7 +435,7 @@ europe=ggplot()+borders(database="world",xlim=c(-10,25),ylim=c(40,70))+geom_hex(
 # Plot the two maps on a grid
 plot_grid(us,europe, labels = c(paste0("(a) USA (n=",nrow(mapdat_us),")"), paste0("(b) Europe (n=",nrow(mapdat_eu),")")), align = "v", label_size=12)
 ```
-**Figure 3. Geographic Distribution of Jobs in the USA vs. Europe.**
+**Figure 3. Geographic Distribution of Jobs in the United States vs. Europe.** (a): Of the jobs located in the United States, the most jobs appear to be in major cities on the east and west coasts.  (b): Of the jobs located in Europe, the most jobs appear to be in Western and Central Europe.
 
 ```{r model differences between US and EU jobs, echo=FALSE,results='tex'}
 # Group data by Region: US or Europe
@@ -485,7 +485,7 @@ kable_styling(latex_options=c("striped","hold_position")) %>% add_footnote(paste
 
 # model = glm(region == "USA" ~ OffersVisaSponsorship + AllowsRemote +  highest_degree,family='binomial',data=diff_analysis)
 ```
-**Table 1. Differences between Job Listings in the United States and Europe.**
+**Table 1. Differences between Job Listings in the United States and Europe.** European job opportunities offer more visa sponsorships than those in the United States (20.8% vs. 5.9%), as well more assistance with relocation (35.5% vs. 26.6%).  More job listings in the United States allow candidates to work remotely than those in Europe (9.2% vs. 2.8%), and there are more job listings for candidates with only Bachelor's degrees in the United States than in Europe (35% vs. 19.4%).
 
 ```{r trends over time,echo=FALSE,results='tex',fig.align='center',fig.height=7,fig.width=9.5}
 # Function to find the top 10 tags for a given year
@@ -567,15 +567,12 @@ plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend
 
 #kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) %>% landscape()
 ```
-**Figure 4. Changes in Job Listing Attributes over the Last Five Years.**
+**Figure 4. Changes in Job Listing Attributes over the Last Five Years.** (a): While Python has consistently been the top skill tag on job listings, programming languages like R and SQL, along with Machine Learning algorithms, have risen to the top over the last three years.  (b): There has been little to no change in the top ten areas of study preferred by employers over the last five years. (c): While New York and San Francisco have had the most job listings between 2013-2016, 2017 is dominated by European cities like Berlin, London and Amsterdam.
 
 # Discussion/Limitations
 There are several limitations to this work.  First, these results do not generalize to *all* data science job listings on job boards and company pages.  The trends seen here are specific to the job board on Stack Overflow, and may be biased towards particular industries, geographic regions, or any mechanism by which Stack Overflow obtains job listings to post on their site.  Second, there is potential for underestimation in the prevalence of computing skills in job listings.  Skills were detected through tags on the job listings; it is possible that additional skills and computing languages were mentioned in the job description or requirements sections.  Similarly, there is potential for error in scraping job descriptions for areas of study and degree types, since there may be some variability in how job descriptions are written and structured.  Finally, since the data for 2017 are incomplete, trends over time may change once full data for the year are available.
 
-- ***Stack Overflow Developer Survey 2016:***
-    + Biggest priorities in jobs are salary, work-life balance, and company culture
-    + Average data scientist salary was $115,244
-    + 9.4% of respondents check Stack Overflow just for job opportunities, and over half of all respondents (56.5%) check Stack Overflow multiple times a day 
+*Discussion: mention Stack Overflow blog posts about the rise of Python and R*
 
 # Acknowledgements
 A big thank you to David Robinson for providing job listings data from Stack Overflow.
