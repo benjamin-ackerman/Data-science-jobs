@@ -3,3 +3,9 @@
 .RData
 .Ruserdata
 packrat/lib*/
+writeup.run.xml
+writeup.bbl
+finalproject_files
+finalproject_cache
+cities
+cities.zip
