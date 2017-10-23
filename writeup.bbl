@@ -19,6 +19,26 @@
 
 \refsection{0}
   \sortlist[entry]{nty/global/}
+    \entry{berlin_startup}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=50257cfa54aaf79092525dda0a812cb4}{%
+           family={Baldwin},
+           family_i={B\bibinitperiod},
+           given={Caroline},
+           given_i={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{50257cfa54aaf79092525dda0a812cb4}
+      \strng{fullhash}{50257cfa54aaf79092525dda0a812cb4}
+      \field{sortinit}{B}
+      \field{sortinithash}{4ecbea03efd0532989d3836d1a048c32}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{ComputerWeekly.com}
+      \field{title}{Berlin plays growing role in Europe's startup race for innovation}
+      \verb{url}
+      \verb http://www.computerweekly.com/feature/Berlin-and-the-European-startup-race-for-innovation
+      \endverb
+    \endentry
     \entry{jeevan_2017}{misc}{}
       \name{author}{1}{}{%
         {{hash=3086ae03b2aabcc1f2157e6a9e8a6a46}{%
@@ -69,6 +89,32 @@
       \range{pages}{18}
       \verb{url}
       \verb http://journal.r-project.org/archive/2013-1/kahle-wickham.pdf
+      \endverb
+    \endentry
+    \entry{kahn_2017}{misc}{}
+      \name{author}{1}{}{%
+        {{hash=66c57bbfa9c44fcfbf152560a338e961}{%
+           family={Kahn},
+           family_i={K\bibinitperiod},
+           given={Michael},
+           given_i={M\bibinitperiod}}}%
+      }
+      \list{publisher}{2}{%
+        {Independent Digital News}%
+        {Media}%
+      }
+      \strng{namehash}{66c57bbfa9c44fcfbf152560a338e961}
+      \strng{fullhash}{66c57bbfa9c44fcfbf152560a338e961}
+      \field{sortinit}{K}
+      \field{sortinithash}{a7d5b3aec5a0890aae7baf85a209abfc}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{The Independent}
+      \field{month}{05}
+      \field{title}{Eastern European tech entrepreneurs are reviving the region's startup scene}
+      \field{year}{2017}
+      \verb{url}
+      \verb http://www.independent.co.uk/Business/indyventure/eastern-europe-tech-secotr-entrepreneurs-startup-global-investors-funds-growth-a7752546.html
       \endverb
     \endentry
     \entry{miller2017quant}{misc}{}
@@ -161,6 +207,117 @@
       \field{year}{2017}
       \verb{url}
       \verb https://www.R-project.org/
+      \endverb
+    \endentry
+    \entry{r_growth}{misc}{}
+      \name{author}{4}{}{%
+        {{hash=42a6c387e6c733bd0db8180d2bbacd30}{%
+           family={Robinson},
+           family_i={R\bibinitperiod},
+           given={David},
+           given_i={D\bibinitperiod}}}%
+        {{hash=1541b84a8c519f970eb738321a7f12d8}{%
+           family={Silge},
+           family_i={S\bibinitperiod},
+           given={Julia},
+           given_i={J\bibinitperiod}}}%
+        {{hash=089d8e123f902e3075021bbccc185876}{%
+           family={Pardue},
+           family_i={P\bibinitperiod},
+           given={Jess},
+           given_i={J\bibinitperiod}}}%
+        {{hash=49e0d3eb9ace71763e3d54c06bafb59b}{%
+           family={Larsen},
+           family_i={L\bibinitperiod},
+           given={Nick},
+           given_i={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{ee479530b589a3b004ff3174278b8195}
+      \strng{fullhash}{c136d5b7d8c44ee0a3b8c2f31dc86be0}
+      \field{sortinit}{R}
+      \field{sortinithash}{c7387613477035a752d935acfc3e3ea2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Stack Overflow Blog}
+      \field{month}{10}
+      \field{title}{The Impressive Growth of R}
+      \field{year}{2017}
+      \verb{url}
+      \verb https://stackoverflow.blog/2017/10/10/impressive-growth-r/
+      \endverb
+    \endentry
+    \entry{python_growth}{misc}{}
+      \name{author}{4}{}{%
+        {{hash=42a6c387e6c733bd0db8180d2bbacd30}{%
+           family={Robinson},
+           family_i={R\bibinitperiod},
+           given={David},
+           given_i={D\bibinitperiod}}}%
+        {{hash=1541b84a8c519f970eb738321a7f12d8}{%
+           family={Silge},
+           family_i={S\bibinitperiod},
+           given={Julia},
+           given_i={J\bibinitperiod}}}%
+        {{hash=089d8e123f902e3075021bbccc185876}{%
+           family={Pardue},
+           family_i={P\bibinitperiod},
+           given={Jess},
+           given_i={J\bibinitperiod}}}%
+        {{hash=49e0d3eb9ace71763e3d54c06bafb59b}{%
+           family={Larsen},
+           family_i={L\bibinitperiod},
+           given={Nick},
+           given_i={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{ee479530b589a3b004ff3174278b8195}
+      \strng{fullhash}{c136d5b7d8c44ee0a3b8c2f31dc86be0}
+      \field{sortinit}{R}
+      \field{sortinithash}{c7387613477035a752d935acfc3e3ea2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Stack Overflow Blog}
+      \field{month}{09}
+      \field{title}{The Incredible Growth of Python}
+      \field{year}{2017}
+      \verb{url}
+      \verb https://stackoverflow.blog/2017/09/06/incredible-growth-python/
+      \endverb
+    \endentry
+    \entry{python_ds}{misc}{}
+      \name{author}{4}{}{%
+        {{hash=42a6c387e6c733bd0db8180d2bbacd30}{%
+           family={Robinson},
+           family_i={R\bibinitperiod},
+           given={David},
+           given_i={D\bibinitperiod}}}%
+        {{hash=1541b84a8c519f970eb738321a7f12d8}{%
+           family={Silge},
+           family_i={S\bibinitperiod},
+           given={Julia},
+           given_i={J\bibinitperiod}}}%
+        {{hash=089d8e123f902e3075021bbccc185876}{%
+           family={Pardue},
+           family_i={P\bibinitperiod},
+           given={Jess},
+           given_i={J\bibinitperiod}}}%
+        {{hash=49e0d3eb9ace71763e3d54c06bafb59b}{%
+           family={Larsen},
+           family_i={L\bibinitperiod},
+           given={Nick},
+           given_i={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{ee479530b589a3b004ff3174278b8195}
+      \strng{fullhash}{c136d5b7d8c44ee0a3b8c2f31dc86be0}
+      \field{sortinit}{R}
+      \field{sortinithash}{c7387613477035a752d935acfc3e3ea2}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Stack Overflow Blog}
+      \field{month}{09}
+      \field{title}{Why is Python Growing So Quickly?}
+      \field{year}{2017}
+      \verb{url}
+      \verb https://stackoverflow.blog/2017/09/14/python-growing-quickly/?utm_source=so-owned&utm_medium=blog&utm_campaign=gen-blog&utm_content=blog-link&utm_term=growth-r
       \endverb
     \endentry
     \entry{rankplot}{misc}{}

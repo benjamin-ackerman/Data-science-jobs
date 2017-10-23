@@ -1,7 +1,7 @@
 ---
 title: "Trends in Data Science Job Postings on Stack Overflow"
 author: "Benjamin Ackerman"
-date: "October 19, 2017"
+date: "October 24, 2017"
 mainfont: Times New Roman
 output: 
   pdf_document:
@@ -217,7 +217,7 @@ Exploratory data analysis was conducted to summarize the most commonly listed at
 
 **Statistical Analysis**
 
-In order to assess any differences in jobs by location, proportions of jobs that offer visa sponsorship, allow remote work, and assist with relocation were compared between jobs listed in the US and Europe, the two geographic regions with the highest numbers of job listings, using two-sample t-tests [@citeR].  The distributions of highest degree preferred were compared across regions with a Pearson's Chi-squared test.
+In order to assess any differences in jobs by location, proportions of jobs that offer visa sponsorship, allow remote work, and assist with relocation were compared between jobs listed in the United States and Europe, the two geographic regions with the highest numbers of job listings, using two-sample t-tests.  The distributions of highest degree preferred were compared across regions with a Pearson's Chi-squared test [@citeR].
 
 # Results
 ```{r load data,echo=FALSE}
@@ -276,11 +276,11 @@ plotRanks <- function(a, b,c,d,e, title.text,arrow.len=.1)
 
 ```
 
-The number of yearly data science job listings posted on Stack Overflow has increased over time, most notably more than doubling between 2013 (n=75) and 2014 (n=174) (Figure 2).  Figure 1 displays the overall top ten skill tags, areas of study, and cities, while Figure 4 contains the top ten lists by year, and depicts how the rankings have changed over time.  Differences between jobs listed in the United States and jobs listed in Europe are described in Table 1, and the geographic distributions of jobs in both regions are portrayed in Figure 3.  
+The number of yearly data science job listings posted on Stack Overflow has increased over time, most notably more than doubling between 2013 (n=75) and 2014 (n=174) (Figure 2).  Figure 1 displays the overall top ten skill tags, areas of study, and cities, while Figure 4 contains the "top ten" lists by year, and depicts how the rankings have changed over time.  Differences between jobs listed in the United States and jobs listed in Europe are described in Table 1, and the geographic distributions of jobs in both regions are portrayed in Figure 3.  
 
 **Skill Tags**
 
-The top three computing skills listed as tags on job listings are `Python`, `R` and `SQL` (Figure 1a).  Of the 995 jobs listed, 448 jobs (`r paste0(round(448/995 * 100,1),"%")`) use the `Python` tag, 281 jobs (`r paste0(round(281/995 * 100,1),"%")`) use the `R` tag and 249 jobs (`r paste0(round(249/995 * 100,1),"%")`) use the `SQL` tag.  While Python has consistently been the most tagged skill in data science job postings, R has become increasingly more important to employers hiring data scientists over the last three years, as it has jumped from the 5th-most frequent tag to the 2nd-most frequent tag from 2013 to 2017 (Figure 4a). Similarly, knowledge of machine learning algorithms has gained more popularity among employers hiring data scientists in a similar timeframe. 
+The top three computing skills listed as tags on job listings are Python, R and SQL (Figure 1a).  Of the 995 jobs listed, 448 jobs (`r paste0(round(448/995 * 100,1),"%")`) use the `Python` tag, 281 jobs (`r paste0(round(281/995 * 100,1),"%")`) use the `R` tag and 249 jobs (`r paste0(round(249/995 * 100,1),"%")`) use the `SQL` tag.  While Python has consistently been the most tagged skill in data science job postings, R has become increasingly more important to employers hiring data scientists over the last three years, as it has jumped from the 5th-most frequent tag to the 2nd-most frequent tag from 2013 to 2017 (Figure 4a). Similarly, knowledge of machine learning algorithms has gained more popularity among employers hiring data scientists in a similar timeframe. 
 
 **Areas of Study**
 
@@ -570,14 +570,12 @@ plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend
 > **Figure 4. Changes in Job Listing Attributes over the Last Five Years.** (a): While Python has consistently been the top skill tag on job listings, programming languages like R and SQL, along with Machine Learning algorithms, have risen to the top over the last three years.  (b): There has been little to no change in the top ten areas of study preferred by employers over the last five years. (c): While New York and San Francisco have had the most job listings between 2013-2016, 2017 is dominated by European cities like Berlin, London and Amsterdam.
 
 # Limitations/Discussion
-There are several limitations to this work.  First, these results do not generalize to *all* data science job listings on job boards and company pages.  The trends seen here are specific to the job board on Stack Overflow, and may be biased towards particular industries, geographic regions, or any mechanism by which Stack Overflow obtains job listings to post on their site.  Second, there is potential for underestimation in the prevalence of computing skills in job listings.  Skills were detected through tags on the job listings; it is possible that additional skills and computing languages were mentioned in the job description or requirements sections.  Similarly, there is potential for error in scraping job descriptions for areas of study and degree types, since there may be some variability in how job descriptions are written and structured.  Finally, since the data for 2017 are incomplete, trends over time may change once full data for the year are available.
+There are several limitations to this work.  First, these results do not generalize to all data science job listings on job boards and company pages.  The trends seen here are specific to the job board on Stack Overflow, and may be biased towards particular industries, geographic regions, or any mechanism by which Stack Overflow obtains job listings to post on their site.  Second, there is potential for underestimation in the prevalence of computing skills in job listings.  Skills were detected through tags on the job listings; it is possible that additional skills and computing languages were mentioned in the job description or requirements sections.  Similarly, there is potential for error in scraping job descriptions for areas of study and degree types, since there may be some variability in how job descriptions are written and structured.  Finally, since the data for 2017 are incomplete, trends over time may change once full data for the year are available.  It is possible that different regions have different seasonal trends in the frequency of posting job opportunities.
 
-*Discussion: mention Stack Overflow blog posts about the rise of Python and R, rise in Europe's startup culture*
+Given these limitations, this paper provides some interesting insight into the optimal characteristics of a qualified candidate for a data science position.  Furthermore, the trends presented in this paper are consistent with broader changes in the popularity of statistical analysis technologies.  Python has been claimed to be the fastest growing major programming language, with a year-over-year-growth in online traffic to Stack Overflow questions related to Python of 27% [@python_growth].  R programming has grown at a similar year-over-year rate, though its growth in tech and data science has been less than that of Python [@r_growth] [@python_ds].  Still, as employers list both Python and R programming more frequently as desired skills, individuals interested in data science jobs should be sure to supplement their quantitative backgrounds with coding expertise. 
 
-- [Rise of Python](https://stackoverflow.blog/2017/09/06/incredible-growth-python/)
-- [Rise of R](https://stackoverflow.blog/2017/10/10/impressive-growth-r/)
-- [Berlin's startup culture](http://www.computerweekly.com/feature/Berlin-and-the-European-startup-race-for-innovation)
-- [Eastern Europe startup culture](http://www.independent.co.uk/Business/indyventure/eastern-europe-tech-secotr-entrepreneurs-startup-global-investors-funds-growth-a7752546.html)
+This paper also highlights the ongoing rise of startup culture in Europe, as both investment in tech and opportunities for data scientists increase in the region.  London and Berlin, which lead 2017 with the most data science job listings, have promising growth in their tech sectors [@berlin_startup], while many believe that Eastern Europe may be the next location for talent and investment in tech as well [@kahn_2017].  With higher rates of visa sponsorship and relocation assistance than job listings in the United States, European opportunities should not be overlooked by those searching for data science jobs.
+
 
 # Acknowledgements
 A big thank you to David Robinson for providing job listings data from Stack Overflow.
