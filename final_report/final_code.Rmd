@@ -223,7 +223,7 @@ In order to assess any differences in jobs by location, proportions of jobs that
 
 # Results
 ```{r load data,echo=FALSE}
-stackjobs = readRDS("../stackjobs.rds")
+stackjobs = readRDS("./stackjobs.rds")
 ```
 
 ```{r plot ranks function, echo=FALSE}
@@ -242,10 +242,6 @@ plotRanks <- function(a, b,c,d,e, title.text,arrow.len=.1)
   plot(rep(1, len.1), 1:len.1, type='n',# cex=0.8, 
        xlim=c(0, 20), ylim=c(0, max(len.1, len.2,len.3,len.4,len.5)+1.3),
        axes=F, xlab="", ylab="") # Remove axes and labels
-#  points(rep(5, len.2), 1:len.2, pch=20, cex=0.8)
-#  points(rep(9, len.3), 1:len.3, pch=20, cex=0.8)
-#  points(rep(13, len.4), 1:len.4, pch=20, cex=0.8)
-#  points(rep(17, len.5), 1:len.5, pch=20, cex=0.8)
   title(title.text,adj=0)
   
   # Put labels next to each observation
@@ -395,25 +391,6 @@ us=ggplot()+borders(database="state")+geom_hex(data=mapdat_us, mapping=aes(x=lon
                axis.text.y=element_blank(),
                axis.ticks.y=element_blank())
 
-# mapdat_us = stackjobs %>% 
-#   group_by(lat,lon) %>% 
-#   count() %>% 
-#   inner_join(stackjobs,by=c("lat",'lon')) %>% 
-#   filter(CountryCode == "US") %>% 
-#   mutate(region = "USA")
-# us=ggplot()+borders(database="state")+geom_point(data = mapdat_us, color = "red",
-#              aes(x = lon, y = lat, size = n), 
-#              inherit.aes = FALSE, fill = "red", shape = 21, alpha = 0.3) +
-#   scale_size_area(max_size = 16)+theme(
-#               legend.position="none",
-#               axis.title.x = element_blank(),
-#                axis.line = element_blank(),
-#                axis.text.x=element_blank(),
-#                axis.ticks.x=element_blank(),
-#                axis.title.y = element_blank(),
-#                axis.text.y=element_blank(),
-#                axis.ticks.y=element_blank())
-
 # Prepare data to plot map of EU jobs
 mapdat_eu = stackjobs %>% 
   group_by(LocationString) %>% 
@@ -536,9 +513,6 @@ major_trend = sapply(2013:2017,major_yr)
 colnames(major_trend) = 2013:2017
 row.names(major_trend) = 1:10
 
-#kable(major_trend,format = "latex", booktabs = T,caption="Top 10 Areas of Study in Job Listings by Year")%>%
-#kable_styling(latex_options="hold_position")
-
 # Function to find the top 10 locatiosn for a given year
 city_yr <- function(yr){
   cities =stackjobs %>%
@@ -566,8 +540,6 @@ par(mfrow=c(3,1))
 plotRanks(tag_trend[,1],tag_trend[,2],tag_trend[,3],tag_trend[,4],tag_trend[,5],"(a) Top 10 Tags by Year")
 plotRanks(major_trend[,1],major_trend[,2],major_trend[,3],major_trend[,4],major_trend[,5],"(b) Top 10 Areas of Study by Year")
 plotRanks(city_trend[,1],city_trend[,2],city_trend[,3],city_trend[,4],city_trend[,5],"(c) Top 10 Cities by Year")
-
-#kable(city_trend,format = "latex", booktabs = T,caption="Top 10 Cities with the Most Job Listings by Year")%>%kable_styling(latex_options=c("striped","hold_position")) %>% landscape()
 ```
 > **Figure 4. Changes in Job Listing Attributes over the Last Five Years.** (a): While Python has consistently been the top skill tag on job listings, programming languages like R and SQL, along with Machine Learning algorithms, have risen to the top over the last three years.  (b): There has been little to no change in the top ten areas of study preferred by employers over the last five years. (c): While New York and San Francisco have had the most job listings between 2013-2016, 2017 is dominated by European cities like Berlin, London and Amsterdam.
 
